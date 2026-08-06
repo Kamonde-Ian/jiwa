@@ -64,7 +64,6 @@ services:
         value: "no-reply@jiwa.example"
       - key: MAIL_FROM_NAME
         value: "JIWA"
-    disk:
-      name: jiwa-uploads
-      mountPath: /var/www/html/storage/app/public
-      sizeGB: 1
+    # Note: uploads (KYC docs/avatars) live on the ephemeral container
+    # filesystem and are lost on each redeploy (free tier has no disks).
+    # Move FILESYSTEM_DISK to s3 if you need persistence.

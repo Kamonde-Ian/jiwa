@@ -257,6 +257,7 @@ body,
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 0.5rem;
     padding: 0.6rem 0.9rem;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     min-width: 9rem;
 }
@@ -271,6 +272,16 @@ body,
     font-size: 1.05rem;
     font-weight: 600;
     color: #fff;
+}
+
+/* ---------- Responsive refinements ---------- */
+@media (max-width: 767.98px) {
+    .admin-hero { padding: 1.5rem 1rem; }
+    .admin-hero-cols { flex-direction: column; align-items: stretch; gap: 1rem; }
+    .admin-hero-stats { width: 100%; }
+    .admin-hero-stat { min-width: 0; flex: 1 1 45%; }
+    .fi-main { padding-inline: 0.75rem; }
+    .fi-topbar > nav { height: 3.25rem; }
 }
 
 /* ---------- Thin scrollbars ---------- */

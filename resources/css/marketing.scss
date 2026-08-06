@@ -19,6 +19,7 @@
     top: 0;
     z-index: 1030;
     background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(15, 20, 34, 0.06);
     box-shadow: 0 2px 12px rgba(15, 20, 34, 0.04);
@@ -366,4 +367,18 @@
     padding: 0.75rem;
     background: #fff;
     border-top: 1px solid #e6e9f5;
+}
+
+/* ---------- Responsive refinements ---------- */
+@media (max-width: 767.98px) {
+    .hero-section { padding: 4rem 0 4rem; }
+    .marketing-nav .nav-link { margin: 0; padding: 0.65rem 0.25rem !important; }
+    .floating-actions { left: 0.75rem; bottom: 0.75rem; }
+    .scroll-actions { right: 0.75rem; bottom: 0.75rem; }
+}
+
+@media (max-width: 575.98px) {
+    .feature-card { padding: 1.25rem; }
+    .stats-band { padding: 1.5rem 1rem !important; }
+    .section-head { text-align: left; }
 }

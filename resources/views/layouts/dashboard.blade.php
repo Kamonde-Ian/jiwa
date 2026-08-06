@@ -22,6 +22,7 @@
     <body>
         <div class="layout-wrapper">
             @include('layouts.partials.sidebar')
+            <div class="layout-sidebar-backdrop" id="layout-sidebar-backdrop" aria-hidden="true"></div>
 
             <div class="layout-page">
                 @include('layouts.partials.topbar')

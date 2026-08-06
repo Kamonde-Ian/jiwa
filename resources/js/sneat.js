@@ -72,11 +72,35 @@ document.addEventListener('livewire:init', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('layout-menu-toggle');
+    const backdrop = document.getElementById('layout-sidebar-backdrop');
+    const mobileMedia = window.matchMedia('(max-width: 991.98px)');
+
+    const setSidebar = (open) => {
+        document.body.classList.toggle('sidebar-collapsed', open);
+    };
+
     if (toggle) {
         toggle.addEventListener('click', () => {
-            document.body.classList.toggle('sidebar-collapsed');
+            setSidebar(!document.body.classList.contains('sidebar-collapsed'));
         });
     }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', () => setSidebar(false));
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mobileMedia.matches && document.body.classList.contains('sidebar-collapsed')) {
+            setSidebar(false);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('.menu-link');
+        if (link && mobileMedia.matches) {
+            setSidebar(false);
+        }
+    });
 
     document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach((el) => {
         new bootstrap.Dropdown(el);

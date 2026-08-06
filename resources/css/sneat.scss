@@ -89,10 +89,23 @@ h1, h2, h3, h4, h5, h6 {
 body.sidebar-collapsed .layout-sidebar { margin-left: calc(-1 * var(--sneat-sidebar-width)); }
 body.sidebar-collapsed .layout-content { margin-left: 0; }
 
+/* Mobile sidebar backdrop */
+.layout-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1035;
+    background: rgba(15, 20, 34, 0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
 @media (max-width: 991.98px) {
     .layout-sidebar { margin-left: calc(-1 * var(--sneat-sidebar-width)); }
     .layout-content { margin-left: 0; }
     body.sidebar-collapsed .layout-sidebar { margin-left: 0; box-shadow: 0 0 1rem rgba(15, 20, 34, 0.2); }
+    body.sidebar-collapsed { overflow: hidden; }
+    body.sidebar-collapsed .layout-sidebar-backdrop { opacity: 1; pointer-events: auto; }
 }
 
 /* Sidebar content */
@@ -302,6 +315,7 @@ body.sidebar-collapsed .layout-content { margin-left: 0; }
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 0.5rem;
     padding: 0.6rem 0.9rem;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
 }
 .page-hero-stat small { display: block; color: rgba(255, 255, 255, 0.85); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -346,6 +360,7 @@ body.sidebar-collapsed .layout-content { margin-left: 0; }
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 0.5rem;
     padding: 0.6rem 0.9rem;
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
 }
 .invest-stat small { display: block; color: rgba(255, 255, 255, 0.85); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -408,3 +423,20 @@ body.sidebar-collapsed .layout-content { margin-left: 0; }
     box-shadow: 0 0.5rem 1.25rem rgba(105, 108, 255, 0.4);
 }
 .invest-cta:disabled { background: #a9abf7; opacity: 0.65; }
+
+/* ---------- Responsive refinements ---------- */
+@media (max-width: 575.98px) {
+    .layout-content { padding: 1rem; }
+    .page-hero { padding: 1.25rem 1rem; }
+    .invest-hero { padding: 1.25rem 1rem; }
+    .page-hero-stat, .invest-stat { padding: 0.5rem 0.6rem; }
+    .page-hero-stat b, .invest-stat b { font-size: 0.95rem; }
+    .card-header { padding: 1rem 1rem 0; }
+    .card-body { padding: 1rem; }
+    .stat-card .avatar { width: 2.375rem; height: 2.375rem; font-size: 1.125rem; }
+    .status-strip { flex-wrap: wrap; }
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .layout-content { padding: 1.25rem; }
+}

@@ -44,15 +44,19 @@ class Referrals extends Component
         $values = [];
 
         $rows = $user->referralEarnings()
-            ->selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, SUM(amount) as total')
             ->where('created_at', '>=', now()->startOfMonth()->subMonths(5))
-            ->groupBy('month')
-            ->pluck('total', 'month');
+            ->get(['created_at', 'amount'])
+            ->reduce(function (array $totals, $tx) {
+                $month = $tx->created_at->format('Y-m');
+                $totals[$month] = ($totals[$month] ?? 0) + $tx->amount;
+
+                return $totals;
+            }, []);
 
         for ($i = 5; $i >= 0; $i--) {
             $month = now()->startOfMonth()->subMonths($i);
             $labels[] = $month->format('M Y');
-            $values[] = round((float) ($rows->get($month->format('Y-m')) ?? 0), 2);
+            $values[] = round((float) ($rows[$month->format('Y-m')] ?? 0), 2);
         }
 
         return compact('labels', 'values');

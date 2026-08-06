@@ -32,18 +32,18 @@ class PendingReviewsWidget extends TableWidget
                 fn () => Deposit::query()
                     ->where('status', Deposit::STATUS_PENDING)
                     ->with('user')
-                    ->selectRaw('"deposit" as kind, id, user_id, network, amount_usd as amount, created_at')
+                    ->selectRaw("'deposit' as kind, id, user_id, network, amount_usd as amount, created_at")
                     ->union(
                         Withdrawal::query()
                             ->whereIn('status', [Withdrawal::STATUS_PENDING_REVIEW, Withdrawal::STATUS_APPROVED])
                             ->with('user')
-                            ->selectRaw('"withdrawal" as kind, id, user_id, network, amount, created_at'),
+                            ->selectRaw("'withdrawal' as kind, id, user_id, network, amount, created_at"),
                     )
                     ->union(
                         KycVerification::query()
                             ->where('status', KycVerification::STATUS_PENDING)
                             ->with('user')
-                            ->selectRaw('"kyc" as kind, id, user_id, document_type as network, 0 as amount, created_at'),
+                            ->selectRaw("'kyc' as kind, id, user_id, document_type as network, 0 as amount, created_at"),
                     ),
             )
             ->columns([

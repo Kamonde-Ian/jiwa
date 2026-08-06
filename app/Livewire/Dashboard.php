@@ -61,7 +61,7 @@ class Dashboard extends Component
     protected function buildGrowthSeries(Wallet $earningsWallet): array
     {
         $series = $earningsWallet->transactions()
-            ->selectRaw('DATE(created_at) as day, SUM(CASE WHEN type = "credit" THEN amount ELSE -amount END) as net')
+            ->selectRaw("DATE(created_at) as day, SUM(CASE WHEN type = 'credit' THEN amount ELSE -amount END) as net")
             ->groupBy('day')
             ->orderBy('day')
             ->get();

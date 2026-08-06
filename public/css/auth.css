@@ -1,0 +1,578 @@
+/* =====================================================================
+   Shared auth design system (user + admin). Light theme only.
+   Tokens reuse the platform Sneat palette. Served statically so the
+   Bootstrap (user) and Filament (admin) auth pages share one source.
+   ===================================================================== */
+
+:root {
+    --color-bg: #f4f5ff;
+    --color-bg-2: #e9ebff;
+    --color-surface: #ffffff;
+    --color-border: #696cff;
+    --color-text-primary: #1d293d;
+}
+
+/* ---------- Full-screen shell ---------- */
+.auth-shell {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    overflow: hidden;
+    background: var(--color-bg);
+}
+
+/* ---------- Card ---------- */
+.auth-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    width: 100%;
+    max-width: 46rem;
+    max-height: 100%;
+    background: var(--color-surface);
+    border-radius: 1.25rem;
+    box-shadow: 0 1rem 2.5rem rgba(105, 108, 255, 0.18);
+}
+
+/* Floating gradient blob that follows the cursor */
+.auth-card-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(59, 130, 246, 0.18), rgba(236, 72, 153, 0.18));
+    border-radius: 50%;
+    filter: blur(64px);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.1s ease-out;
+    pointer-events: none;
+    z-index: 0;
+}
+.auth-card:hover .auth-card-glow,
+.auth-card.auth-card-hovering .auth-card-glow { opacity: 1; }
+
+/* ---------- Left: form column ---------- */
+.auth-card-left {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 55%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.25rem 1.75rem;
+}
+
+.auth-card-inner {
+    margin: auto;
+    width: 100%;
+    max-width: 26rem;
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.auth-brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #696cff, #5f61e6);
+    color: #fff;
+    font-size: 1rem;
+    box-shadow: 0 0.35rem 0.9rem rgba(105, 108, 255, 0.35);
+}
+.auth-brand-icon svg { width: 1rem; height: 1rem; }
+.auth-brand-name {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--color-text-primary);
+}
+
+.auth-heading {
+    font-size: clamp(1.5rem, 3vw, 1.875rem);
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--color-text-primary);
+    margin-bottom: 0.375rem;
+}
+.auth-subtitle {
+    color: #566a7f;
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+/* ---------- Social icons ---------- */
+.auth-socials {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.875rem 0 0.375rem;
+    padding: 0;
+    list-style: none;
+}
+.auth-social {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--color-text-primary);
+    background: var(--color-bg-2);
+    color: hsl(203, 92%, 8%);
+    overflow: hidden;
+    text-decoration: none;
+}
+.auth-social::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-bg);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.5s ease;
+}
+.auth-social svg {
+    position: relative;
+    z-index: 2;
+    width: 1.0625rem;
+    height: 1.0625rem;
+    transition: color 0.4s ease;
+}
+.auth-social:hover::before { transform: scaleY(1); }
+.auth-social:hover svg { color: var(--color-text-primary); }
+
+/* "or use your account" divider */
+.auth-or {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #a1acb8;
+    font-size: 0.75rem;
+    margin: 0.5rem 0;
+}
+.auth-or::before,
+.auth-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(105, 108, 255, 0.16);
+}
+
+/* ---------- Fields ---------- */
+.auth-field { position: relative; margin-bottom: 0.625rem; }
+
+.auth-field .form-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.auth-field .auth-input {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 2.5rem;
+    padding: 0 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-weight: 300;
+    box-shadow: 0 1px 2px rgba(15, 20, 34, 0.06);
+    transition: all 0.2s ease;
+    line-height: normal;
+}
+.auth-field .auth-input::placeholder { font-weight: 500; color: #a1acb8; }
+.auth-field .auth-input:focus {
+    background: var(--color-bg);
+    border-color: var(--color-border);
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15);
+}
+.auth-field .auth-input.is-invalid {
+    border-color: var(--bs-danger);
+    box-shadow: none;
+    background-image: none;
+}
+.auth-field .auth-input.is-invalid:focus { box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15); }
+.auth-field .invalid-feedback { font-size: 0.8125rem; }
+
+.letter-spacing-lg { letter-spacing: 0.35em; }
+
+.auth-card .form-check-input { accent-color: var(--color-border); }
+
+/* Mouse-tracking glow lines (top / bottom edge) */
+.auth-field-glow {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 2px;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.auth-field-glow-top { top: 0; }
+.auth-field-glow-bottom { bottom: 0; }
+.auth-field-glow.show { opacity: 1; }
+
+/* Informational note (2FA / verify / confirm pages) */
+.auth-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    margin-bottom: 0.75rem;
+    background: #f4f5ff;
+    border: 1px solid #e7e8ff;
+    border-radius: 0.75rem;
+    color: #566a7f;
+    font-size: 0.8125rem;
+}
+.auth-note i { color: var(--color-border); margin-top: 0.125rem; }
+
+/* Demo account hint card (login pages) */
+.auth-demo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    margin-bottom: 0.75rem;
+    background: #eef0ff;
+    border: 1px solid #dde0ff;
+    border-radius: 0.75rem;
+}
+.auth-demo .auth-demo-title { font-weight: 600; color: var(--color-text-primary); font-size: 0.8125rem; }
+.auth-demo .auth-demo-credentials { color: #566a7f; font-size: 0.75rem; }
+
+/* ---------- Buttons ---------- */
+.auth-card .btn-primary {
+    --bs-btn-bg: var(--color-border);
+    --bs-btn-border-color: var(--color-border);
+    --bs-btn-hover-bg: var(--sneat-primary-dark);
+    --bs-btn-hover-border-color: var(--sneat-primary-dark);
+    --bs-btn-active-bg: var(--sneat-primary-dark);
+    --bs-btn-active-border-color: var(--sneat-primary-dark);
+    --bs-btn-disabled-bg: var(--color-border);
+    --bs-btn-disabled-border-color: var(--color-border);
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+.auth-card .btn-primary:hover:not(:disabled) {
+    transform: scale(1.03);
+    box-shadow: 0 0.75rem 1.5rem rgba(105, 108, 255, 0.35);
+}
+.auth-card .btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -120%;
+    width: 45%;
+    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transform: skew(-13deg);
+    transition: left 0.55s ease;
+}
+.auth-card .btn-primary:hover::after { left: 130%; }
+.auth-card .btn-outline-secondary {
+    --bs-btn-hover-bg: var(--sneat-primary);
+    --bs-btn-hover-border-color: var(--sneat-primary);
+    --bs-btn-active-bg: var(--sneat-primary);
+    --bs-btn-active-border-color: var(--sneat-primary);
+    border-radius: 0.5rem;
+}
+
+/* ---------- Inline links ---------- */
+.auth-link {
+    color: var(--color-border);
+    font-weight: 600;
+    text-decoration: none;
+}
+.auth-link:hover { color: var(--sneat-primary-dark); }
+
+.auth-back { margin-top: 0.75rem; }
+
+/* ---------- Footer line ---------- */
+.auth-footer { color: #a1acb8; font-size: 0.75rem; }
+
+/* ---------- Right: visual panel ---------- */
+.auth-card-right {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 45%;
+    display: none;
+    min-height: 100%;
+}
+@media (min-width: 992px) {
+    .auth-card-right { display: block; }
+}
+
+.auth-visual {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 80% 12%, rgba(255, 255, 255, 0.22), transparent 40%),
+        radial-gradient(circle at 15% 95%, rgba(255, 255, 255, 0.14), transparent 45%),
+        linear-gradient(160deg, #696cff 0%, #5f61e6 55%, #4b4ddb 100%);
+}
+.auth-visual::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('/images/coins-pattern.svg');
+    background-size: 8rem 8rem;
+    opacity: 0.5;
+}
+.auth-visual-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -58%);
+    width: 9rem;
+    height: 9rem;
+    color: rgba(255, 255, 255, 0.9);
+    filter: drop-shadow(0 1rem 2rem rgba(24, 32, 46, 0.35));
+}
+.auth-visual-caption {
+    position: absolute;
+    left: 2rem;
+    right: 2rem;
+    bottom: 2rem;
+    color: #fff;
+}
+.auth-visual-caption strong {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 0.375rem;
+}
+.auth-visual-caption span { font-size: 0.8125rem; color: rgba(255, 255, 255, 0.85); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 991.98px) {
+    .auth-card { min-height: 0; }
+    .auth-card-left { padding: 1.25rem 1rem; }
+    .auth-card-right { display: none; }
+}
+
+/* =====================================================================
+   Filament admin auth (login + password reset). These rules restyle the
+   Filament simple layout into the same two-column card as the user auth,
+   so both auths look identical.
+   ===================================================================== */
+
+.fi-simple-layout {
+    background: var(--color-bg);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.fi-simple-main {
+    max-width: 46rem !important;
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+    padding: 0 !important;
+    border-radius: 1.25rem !important;
+    overflow: hidden;
+    max-height: calc(100vh - 2rem) !important;
+    box-shadow: 0 1rem 2.5rem rgba(105, 108, 255, 0.18) !important;
+}
+
+.fi-auth {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    min-height: 0;
+    max-height: calc(100vh - 2rem);
+    background: var(--color-surface);
+}
+
+.fi-auth-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 500px;
+    height: 500px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(59, 130, 246, 0.18), rgba(236, 72, 153, 0.18));
+    border-radius: 50%;
+    filter: blur(64px);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.1s ease-out;
+    pointer-events: none;
+    z-index: 0;
+}
+.fi-auth:hover .fi-auth-glow,
+.fi-auth.auth-card-hovering .fi-auth-glow { opacity: 1; }
+
+.fi-auth-left {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 55%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.25rem 1.75rem;
+}
+
+.fi-auth-inner { width: 100%; max-width: 26rem; margin: auto; }
+
+.fi-auth-right {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 45%;
+    display: none;
+    min-height: 0;
+}
+@media (min-width: 992px) {
+    .fi-auth-right { display: block; }
+}
+
+/* ---------- Filament inputs -> AppInput look ---------- */
+.fi-auth .fi-input-wrp {
+    border: 2px solid var(--color-border) !important;
+    border-radius: 0.5rem !important;
+    background: var(--color-surface) !important;
+    box-shadow: 0 1px 2px rgba(15, 20, 34, 0.06) !important;
+    min-height: 2.5rem !important;
+    position: relative;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.fi-auth .fi-input-wrp:focus-within {
+    background: var(--color-bg) !important;
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15) !important;
+}
+.fi-auth .fi-input {
+    background: transparent !important;
+    box-shadow: none !important;
+    font-weight: 300 !important;
+    color: var(--color-text-primary) !important;
+}
+.fi-auth .fi-input::placeholder { font-weight: 500; color: #a1acb8; }
+
+/* ---------- Filament submit button -> design button ---------- */
+.fi-auth .fi-btn {
+    background-color: var(--color-border) !important;
+    border: 0 !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden;
+    position: relative;
+    letter-spacing: 0.2px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+.fi-auth .fi-btn:hover:not(:disabled) {
+    background-color: #5f61e6 !important;
+    transform: scale(1.03);
+    box-shadow: 0 0.75rem 1.5rem rgba(105, 108, 255, 0.35) !important;
+}
+.fi-auth .fi-btn::after {
+    content: '';
+    position: absolute; top: 0; bottom: 0; left: -120%; width: 45%;
+    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+    transform: skew(-13deg);
+    transition: left 0.55s ease;
+}
+.fi-auth .fi-btn:hover::after { left: 130%; }
+
+/* Link-style actions inside the card (e.g. "Back to login") keep their link look */
+.fi-auth .fi-btn.fi-btn-style-link {
+    background: transparent !important;
+    color: var(--color-border);
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: none !important;
+}
+.fi-auth .fi-btn.fi-btn-style-link:hover {
+    color: #5f61e6;
+    background: transparent !important;
+    transform: none;
+    box-shadow: none !important;
+}
+.fi-auth .fi-btn.fi-btn-style-link::after { display: none; }
+
+/* ---------- Wizard (step-by-step long forms, user register) ---------- */
+.auth-wizard-steps {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0;
+    list-style: none;
+}
+.auth-wizard-step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+.auth-wizard-step:not(:last-child)::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--color-bg-2);
+    border-radius: 2px;
+    transition: background 0.3s ease;
+}
+.auth-wizard-step.done:not(:last-child)::after { background: var(--color-border); }
+.auth-wizard-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-bg-2);
+    color: var(--color-text-primary);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}
+.auth-wizard-step.active .auth-wizard-dot {
+    background: var(--color-border);
+    color: #fff;
+    box-shadow: 0 0.35rem 0.9rem rgba(105, 108, 255, 0.35);
+}
+.auth-wizard-step.done .auth-wizard-dot { background: var(--color-border); color: #fff; }
+.auth-wizard-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #a1acb8;
+    white-space: nowrap;
+}
+.auth-wizard-step.active .auth-wizard-label { color: var(--color-text-primary); }
+.auth-wizard-panel { margin-bottom: 1rem; }
+.auth-wizard-actions { gap: 0.75rem; }
+
+@media (max-width: 991.98px) {
+    .fi-auth-left { padding: 1.25rem 1rem; }
+    .auth-wizard-label { display: none; }
+    .auth-wizard-step:not(:last-child)::after { margin: 0 0.25rem; }
+}

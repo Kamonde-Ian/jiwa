@@ -1,0 +1,70 @@
+databases:
+  - name: jiwa-db
+    databaseName: jiwa
+    user: jiwa
+    plan: free
+    region: oregon
+
+services:
+  - type: web
+    name: jiwa-web
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /up
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_TIMEZONE
+        value: UTC
+      - key: APP_NAME
+        value: JIWA
+      - key: APP_URL
+        sync: false
+      - key: APP_KEY
+        sync: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: jiwa-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: jiwa-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: jiwa-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: jiwa-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: jiwa-db
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_LIFETIME
+        value: "120"
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: FILESYSTEM_DISK
+        value: public
+      - key: MAIL_MAILER
+        value: log
+      - key: MAIL_FROM_ADDRESS
+        value: "no-reply@jiwa.example"
+      - key: MAIL_FROM_NAME
+        value: "JIWA"
+    disk:
+      name: jiwa-uploads
+      mountPath: /var/www/html/storage/app/public
+      sizeGB: 1

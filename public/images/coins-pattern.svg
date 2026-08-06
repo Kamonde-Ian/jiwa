@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <path id="coin" d="M64 16 20 48v32l44 32 44-32V48L64 16zm0 8 36 24v28L64 100 28 76V48l36-24z"/>
+    <mask id="m">
+      <rect width="128" height="128" fill="#fff"/>
+      <use href="#coin" fill="#000"/>
+    </mask>
+  </defs>
+  <rect width="128" height="128" fill="#ffffff" opacity="0.08"/>
+  <g mask="url(#m)" opacity="0.5">
+    <rect width="128" height="128" fill="#ffffff"/>
+  </g>
+</svg>

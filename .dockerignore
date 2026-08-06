@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+.env.backup
+.env.production
+node_modules
+vendor
+storage
+public/storage
+public/build
+public/hot
+tests
+docker-compose.yml
+*.md
+.phpunit.result.cache

@@ -28,6 +28,11 @@ php artisan package:discover --ansi || true
 # Apply migrations (no-op when already applied). Fail loudly on real errors.
 php artisan migrate --force
 
+# Seed demo users/plans once, only on a fresh database. The seeder is
+# idempotent (updateOrCreate) but runs platform-address writes, so it must
+# never overwrite production settings on redeploys.
+php artisan jiwa:seed-demo-if-empty
+
 # Production optimization: cached config/routes/views
 php artisan optimize || true
 

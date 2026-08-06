@@ -13,9 +13,6 @@ use App\Livewire\Withdrawals;
 use App\Http\Controllers\MarketingController;
 use Illuminate\Support\Facades\Route;
 
-/* Health check for Render */
-Route::get('/up', fn () => response()->json(['status' => 'ok']));
-
 /* Public marketing pages */
 Route::view('/', 'marketing.home')->name('home');
 Route::view('/about', 'marketing.about')->name('public.about');

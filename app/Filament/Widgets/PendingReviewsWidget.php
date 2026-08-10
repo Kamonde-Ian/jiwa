@@ -32,18 +32,18 @@ class PendingReviewsWidget extends TableWidget
                 fn () => Deposit::query()
                     ->where('status', Deposit::STATUS_PENDING)
                     ->with('user')
-                    ->selectRaw("'deposit' as kind, id, user_id, network, amount_usd as amount, created_at")
+                    ->selectRaw("'deposit' as kind, id, user_id, network, amount_usd as amount, created_at, null as document_type")
                     ->union(
                         Withdrawal::query()
                             ->whereIn('status', [Withdrawal::STATUS_PENDING_REVIEW, Withdrawal::STATUS_APPROVED])
                             ->with('user')
-                            ->selectRaw("'withdrawal' as kind, id, user_id, network, amount, created_at"),
+                            ->selectRaw("'withdrawal' as kind, id, user_id, network, amount, created_at, null as document_type"),
                     )
                     ->union(
                         KycVerification::query()
                             ->where('status', KycVerification::STATUS_PENDING)
                             ->with('user')
-                            ->selectRaw("'kyc' as kind, id, user_id, document_type as network, 0 as amount, created_at"),
+                            ->selectRaw("'kyc' as kind, id, user_id, document_type, null as amount, created_at, document_type"),
                     ),
             )
             ->columns([
@@ -53,9 +53,22 @@ class PendingReviewsWidget extends TableWidget
                     default => 'primary',
                 }),
                 TextColumn::make('user.name')->label('User'),
-                TextColumn::make('network')->badge()->color('primary')->formatStateUsing(fn ($state) => strtoupper($state)),
-                TextColumn::make('amount')->label('Amount')
-                    ->formatStateUsing(fn ($state, Model $record) => $record->kind === 'kyc' ? '—' : '$'.number_format((float) $state, 2)),
+                TextColumn::make('network')
+                    ->label('Network')
+                    ->badge()
+                    ->color('primary')
+                    ->placeholder('')
+                    ->formatStateUsing(fn ($state, Model $record) => $record->kind === 'kyc' ? '' : strtoupper($state)),
+                TextColumn::make('document_type')
+                    ->label('Document')
+                    ->badge()
+                    ->color('primary')
+                    ->placeholder('')
+                    ->formatStateUsing(fn ($state, Model $record) => $record->kind === 'kyc' ? strtoupper($state) : ''),
+                TextColumn::make('amount')
+                    ->label('Amount')
+                    ->placeholder('')
+                    ->formatStateUsing(fn ($state, Model $record) => $record->kind === 'kyc' ? '' : '$'.number_format((float) $state, 2)),
                 TextColumn::make('created_at')->label('Requested')->dateTime(),
             ])
             ->recordUrl(fn (Model $record) => match ($record->kind) {

@@ -38,6 +38,11 @@ class StatsOverviewWidget extends BaseWidget
                 ->description('Awaiting processing')
                 ->icon('heroicon-o-arrow-up-circle')
                 ->color('info'),
+
+            Stat::make('Total Investments', '$'.number_format((float) Investment::sum('principal_amount'), 2))
+                ->description('Principal across all investments')
+                ->icon('heroicon-o-banknotes')
+                ->color('primary'),
         ];
     }
 }

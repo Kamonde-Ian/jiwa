@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Domain\Wallets\WalletService;
 use App\Models\Investment;
 use App\Models\InvestmentPlan;
+use App\Models\PlatformWallet;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Database\Seeder;
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
             InvestmentPlanSeeder::class,
         ]);
 
+        $this->seedPlatformWallets();
         $this->seedPlatformAddresses();
 
         $admin = User::updateOrCreate(
@@ -126,6 +128,37 @@ class DatabaseSeeder extends Seeder
             );
             $tx->forceFill(['created_at' => $creditedOn])->save();
         }
+    }
+
+    /**
+     * Two admin-managed platform wallets: one receiving deposits, one paying
+     * out withdrawals. Each carries a gas balance reserved for transaction fees.
+     */
+    protected function seedPlatformWallets(): void
+    {
+        PlatformWallet::updateOrCreate(
+            ['type' => PlatformWallet::TYPE_DEPOSIT],
+            [
+                'name' => 'Deposit Wallet',
+                'network' => 'usdt_trc20',
+                'address' => 'TJIWA_demo_trc20_address_0001',
+                'balance' => 0,
+                'gas_balance' => 0,
+                'currency' => 'USDT',
+            ],
+        );
+
+        PlatformWallet::updateOrCreate(
+            ['type' => PlatformWallet::TYPE_WITHDRAWAL],
+            [
+                'name' => 'Withdrawal Wallet',
+                'network' => 'usdt_trc20',
+                'address' => 'TJIWA_demo_trc20_address_0001',
+                'balance' => 0,
+                'gas_balance' => 0,
+                'currency' => 'USDT',
+            ],
+        );
     }
 
     /**

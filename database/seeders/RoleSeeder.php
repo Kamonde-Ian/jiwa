@@ -21,6 +21,8 @@ class RoleSeeder extends Seeder
         'view withdrawals',
         'process withdrawals',
         'view referral earnings',
+        'view platform wallets',
+        'manage platform wallets',
         'view settings',
         'manage settings',
         'manage roles',

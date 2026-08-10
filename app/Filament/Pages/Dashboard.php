@@ -24,6 +24,7 @@ class Dashboard extends BaseDashboard
             ['label' => 'Active Investments', 'value' => number_format(Investment::where('status', Investment::STATUS_ACTIVE)->count())],
             ['label' => 'Pending Deposits', 'value' => number_format(Deposit::where('status', Deposit::STATUS_PENDING)->count())],
             ['label' => 'Pending Withdrawals', 'value' => number_format(Withdrawal::whereIn('status', [Withdrawal::STATUS_PENDING_REVIEW, Withdrawal::STATUS_APPROVED])->count())],
+            ['label' => 'Total Investments', 'value' => '$'.number_format((float) Investment::sum('principal_amount'), 2)],
         ];
     }
 }

@@ -37,4 +37,37 @@ class CandleChartRenderTest extends TestCase
         $response->assertSee('Balance', false);
         $response->assertSee('Trend', false);
     }
+
+    public function test_swing_line_alternates_between_highs_and_lows(): void
+    {
+        $component = new \App\Livewire\Dashboard();
+        $method = new \ReflectionMethod(\App\Livewire\Dashboard::class, 'buildSwingSeries');
+        $method->setAccessible(true);
+
+        $candles = [
+            ['x' => 1000, 'y' => [100, 105, 99, 103]],
+            ['x' => 2000, 'y' => [103, 110, 102, 108]], // HH
+            ['x' => 3000, 'y' => [108, 109, 98, 101]],  // LL pull-back
+            ['x' => 4000, 'y' => [101, 112, 100, 111]], // HH again
+            ['x' => 5000, 'y' => [111, 113, 105, 106]],
+        ];
+
+        $line = $method->invoke($component, $candles);
+
+        $this->assertGreaterThanOrEqual(4, count($line));
+
+        $ys = array_column($line, 'y');
+        $flips = 0;
+        for ($i = 2; $i < count($ys); $i++) {
+            $prevDir = $ys[$i - 1] <=> $ys[$i - 2];
+            $dir = $ys[$i] <=> $ys[$i - 1];
+            if ($dir !== 0 && $prevDir !== 0 && $dir !== $prevDir) {
+                $flips++;
+            }
+        }
+
+        // The line must move high -> low -> high (HH -> LL -> HH).
+        $this->assertGreaterThanOrEqual(2, $flips);
+        $this->assertEquals([103, 110, 98, 113], $ys);
+    }
 }

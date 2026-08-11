@@ -111,8 +111,10 @@ class Dashboard extends Component
     }
 
     /**
-     * Zigzag line that moves from wick to wick, tracing the swing structure
-     * (higher highs / higher lows alternating with lower highs / lower lows).
+     * Zigzag trend line that alternates high/low swings: it runs up to a
+     * swing high (higher high), down to the next swing low (lower low), then
+     * repeats the cycle. A swing is only committed when price reverses past
+     * the previous extreme by a minimum move, filtering out noise.
      */
     protected function buildSwingSeries(array $candles): array
     {
@@ -122,59 +124,69 @@ class Dashboard extends Component
             return [];
         }
 
-        if ($count < 3) {
-            return array_map(fn ($c) => ['x' => $c['x'], 'y' => $c['y'][3]], $candles);
-        }
+        $points = array_map(fn ($c) => [
+            'x' => $c['x'],
+            'h' => $c['y'][1],
+            'l' => $c['y'][2],
+            'c' => $c['y'][3],
+        ], $candles);
 
-        $points = array_map(fn ($c) => ['x' => $c['x'], 'h' => $c['y'][1], 'l' => $c['y'][2], 'c' => $c['y'][3]], $candles);
+        if ($count < 3) {
+            return array_map(fn ($p) => ['x' => $p['x'], 'y' => round($p['c'], 2)], $points);
+        }
 
         $span = max(array_column($points, 'h')) - min(array_column($points, 'l'));
-        $minMove = max($span * 0.05, 0.02);
+        $minMove = max($span * 0.02, 0.01);
+        $trendsUp = $points[$count - 1]['c'] >= $points[0]['c'];
 
-        // Single-bar-reversal pivots on the wick extremes.
-        $pivots = [];
-        for ($i = 1; $i < $count - 1; $i++) {
-            $prev = $points[$i - 1];
-            $curr = $points[$i];
-            $next = $points[$i + 1];
+        $swings = [];
+        $pivot = $points[0];
+        $lookingForHigh = $trendsUp;
 
-            if ($curr['h'] > $prev['h'] && $curr['h'] >= $next['h']) {
-                $pivots[] = ['type' => 'high', 'x' => $curr['x'], 'y' => $curr['h']];
-            } elseif ($curr['l'] < $prev['l'] && $curr['l'] <= $next['l']) {
-                $pivots[] = ['type' => 'low', 'x' => $curr['x'], 'y' => $curr['l']];
-            }
-        }
+        for ($i = 1; $i < $count; $i++) {
+            $p = $points[$i];
 
-        // Zigzag: walk the pivots, extend a same-type pivot when more extreme,
-        // and only commit an opposite pivot when the swing is meaningful.
-        $legs = [];
-        $last = null;
-
-        foreach ($pivots as $pivot) {
-            if ($last === null || $pivot['type'] === $last['type']) {
-                if ($last === null || $this->isMoreExtreme($pivot, $last)) {
-                    if ($last === null) {
-                        $legs[] = $pivot;
-                    } else {
-                        $legs[count($legs) - 1] = $pivot;
-                    }
-                    $last = $pivot;
+            if ($lookingForHigh) {
+                if ($p['h'] > $pivot['h']) {
+                    $pivot = $p;
+                    continue;
                 }
+
+                if ($pivot['h'] - $p['l'] >= $minMove) {
+                    $swings[] = ['type' => 'high', 'x' => $pivot['x'], 'y' => $pivot['h']];
+                    $pivot = $p;
+                    $lookingForHigh = false;
+                }
+
                 continue;
             }
 
-            if (abs($pivot['y'] - $last['y']) >= $minMove) {
-                $legs[] = $pivot;
-                $last = $pivot;
+            if ($p['l'] < $pivot['l']) {
+                $pivot = $p;
+                continue;
+            }
+
+            if ($p['h'] - $pivot['l'] >= $minMove) {
+                $swings[] = ['type' => 'low', 'x' => $pivot['x'], 'y' => $pivot['l']];
+                $pivot = $p;
+                $lookingForHigh = true;
             }
         }
 
-        // Anchor the line to the first and last closes so it spans the chart.
+        // Commit the final extreme so the line always tracks the latest swing.
+        $swings[] = [
+            'type' => $lookingForHigh ? 'high' : 'low',
+            'x' => $pivot['x'],
+            'y' => $lookingForHigh ? $pivot['h'] : $pivot['l'],
+        ];
+
+        // Anchor the line to the first close, run it through each swing, and
+        // end on the latest close so it spans the whole chart.
         $line = [['x' => $points[0]['x'], 'y' => round($points[0]['c'], 2)]];
 
-        foreach ($legs as $leg) {
-            if (end($line)['x'] !== $leg['x']) {
-                $line[] = ['x' => $leg['x'], 'y' => round($leg['y'], 2)];
+        foreach ($swings as $swing) {
+            if (end($line)['x'] !== $swing['x']) {
+                $line[] = ['x' => $swing['x'], 'y' => round($swing['y'], 2)];
             }
         }
 
@@ -183,14 +195,5 @@ class Dashboard extends Component
         }
 
         return $line;
-    }
-
-    protected function isMoreExtreme(array $new, array $old): bool
-    {
-        if ($new['type'] === 'high') {
-            return $new['y'] >= $old['y'];
-        }
-
-        return $new['y'] <= $old['y'];
     }
 }

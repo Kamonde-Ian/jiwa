@@ -180,9 +180,16 @@ class Dashboard extends Component
             'y' => $lookingForHigh ? $pivot['h'] : $pivot['l'],
         ];
 
-        // Anchor the line to the first close, run it through each swing, and
-        // end on the latest close so it spans the whole chart.
-        $line = [['x' => $points[0]['x'], 'y' => round($points[0]['c'], 2)]];
+        // Anchor the line: if the first swing sits on the first candle, open
+        // right on that swing extreme so the cycle starts HH -> LL -> HH;
+        // otherwise open on the first close and connect across each swing.
+        $line = [];
+
+        if ($swings[0]['x'] === $points[0]['x']) {
+            $line[] = ['x' => $swings[0]['x'], 'y' => round($swings[0]['y'], 2)];
+        } else {
+            $line[] = ['x' => $points[0]['x'], 'y' => round($points[0]['c'], 2)];
+        }
 
         foreach ($swings as $swing) {
             if (end($line)['x'] !== $swing['x']) {

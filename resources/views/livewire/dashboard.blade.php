@@ -17,17 +17,17 @@
                     <h5>Growth Overview</h5>
                 </div>
                 <div class="card-body d-flex flex-column">
-                    @if (count($chart['values']) > 0)
+                    @if (count($chart) > 0)
                         @php
                             $growthConfig = [
-                                'chart' => ['type' => 'area', 'height' => 300, 'toolbar' => ['show' => false]],
-                                'series' => [['name' => 'Earnings', 'data' => $chart['values']]],
-                                'xaxis' => ['categories' => $chart['labels'], 'labels' => ['style' => ['colors' => '#566a7f']]],
-                                'stroke' => ['curve' => 'smooth', 'width' => 2.5],
-                                'colors' => ['#D8A839'],
-                                'fill' => ['gradient' => ['opacityFrom' => 0.25, 'opacityTo' => 0]],
+                                'chart' => ['type' => 'candlestick', 'height' => 300, 'toolbar' => ['show' => false]],
+                                'series' => [['name' => 'Balance', 'data' => $chart]],
+                                'xaxis' => ['type' => 'datetime'],
+                                'plotOptions' => ['candlestick' => ['colors' => [
+                                    'upward' => '#71dd37',
+                                    'downward' => '#ff5b5b',
+                                ]]],
                                 'dataLabels' => ['enabled' => false],
-                                'grid' => ['borderColor' => '#eceef1'],
                             ];
                         @endphp
                         <div data-chart='@json($growthConfig)' class="chart-fill"></div>

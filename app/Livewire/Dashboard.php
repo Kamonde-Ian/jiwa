@@ -53,30 +53,51 @@ class Dashboard extends Component
             'referralIncome' => $referral,
             'recentTransactions' => $recentTransactions,
             'portfolio' => $portfolio,
-            'chart' => $this->buildGrowthSeries($wallets->get(Wallet::TYPE_EARNINGS)),
+            'chart' => $this->buildGrowthCandles($wallets->get(Wallet::TYPE_EARNINGS)),
             'portfolioChart' => $portfolioConfig,
         ]);
     }
 
-    protected function buildGrowthSeries(Wallet $earningsWallet): array
+    protected function buildGrowthCandles(Wallet $earningsWallet): array
     {
-        $series = $earningsWallet->transactions()
-            ->selectRaw("DATE(created_at) as day, SUM(CASE WHEN type = 'credit' THEN amount ELSE -amount END) as net")
-            ->groupBy('day')
-            ->orderBy('day')
-            ->get();
+        $transactions = $earningsWallet->transactions()
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get(['created_at', 'type', 'amount']);
 
-        $balance = 0;
-        $points = [];
+        $balance = 0.0;
+        $candles = [];
+        $dayKey = null;
+        $open = $high = $low = $close = 0.0;
 
-        foreach ($series as $row) {
-            $balance += (float) $row->net;
-            $points[] = [$row->day, round($balance, 2)];
+        $flush = function () use (&$candles, &$dayKey, &$open, &$high, &$low, &$close) {
+            if ($dayKey === null) {
+                return;
+            }
+
+            $candles[] = [
+                'x' => \Illuminate\Support\Carbon::parse($dayKey)->startOfDay()->addHours(12)->getTimestampMs(),
+                'y' => [round($open, 2), round($high, 2), round($low, 2), round($close, 2)],
+            ];
+        };
+
+        foreach ($transactions as $tx) {
+            $key = $tx->created_at->toDateString();
+
+            if ($key !== $dayKey) {
+                $flush();
+                $dayKey = $key;
+                $open = $high = $low = $close = $balance;
+            }
+
+            $balance += $tx->type === 'credit' ? (float) $tx->amount : -(float) $tx->amount;
+            $high = max($high, $balance);
+            $low = min($low, $balance);
+            $close = $balance;
         }
 
-        return [
-            'labels' => array_map(fn ($p) => \Illuminate\Support\Carbon::parse($p[0])->format('M d'), $points),
-            'values' => array_map(fn ($p) => $p[1], $points),
-        ];
+        $flush();
+
+        return $candles;
     }
 }

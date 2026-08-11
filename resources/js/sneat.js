@@ -94,7 +94,6 @@ window.addEventListener('theme-changed', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('layout-menu-toggle');
     const backdrop = document.getElementById('layout-sidebar-backdrop');
     const mobileMedia = window.matchMedia('(max-width: 991.98px)');
 
@@ -102,11 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.classList.toggle('sidebar-collapsed', open);
     };
 
-    if (toggle) {
-        toggle.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.layout-menu-toggle')) {
             setSidebar(!document.body.classList.contains('sidebar-collapsed'));
-        });
-    }
+        }
+    });
 
     if (backdrop) {
         backdrop.addEventListener('click', () => setSidebar(false));

@@ -1,10 +1,10 @@
 <nav class="layout-navbar">
     <div class="container-fluid d-flex align-items-center justify-content-between h-100 px-3">
         <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary border-0 d-lg-none me-1" type="button" id="layout-menu-toggle" title="Toggle menu">
+            <button class="btn btn-sm btn-outline-secondary border-0 d-lg-none me-1 layout-menu-toggle" type="button" title="Toggle menu">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            <button class="btn btn-sm btn-outline-secondary border-0 d-none d-lg-inline-flex me-1" type="button" id="layout-menu-toggle" title="Collapse menu">
+            <button class="btn btn-sm btn-outline-secondary border-0 d-none d-lg-inline-flex me-1 layout-menu-toggle" type="button" title="Collapse menu">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>

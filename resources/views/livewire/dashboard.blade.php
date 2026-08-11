@@ -17,16 +17,20 @@
                     <h5>Growth Overview</h5>
                 </div>
                 <div class="card-body d-flex flex-column">
-                    @if (count($chart) > 0)
+                    @if (count($chart['candles']) > 0)
                         @php
                             $growthConfig = [
-                                'chart' => ['type' => 'candlestick', 'height' => 300, 'toolbar' => ['show' => false]],
-                                'series' => [['name' => 'Balance', 'data' => $chart]],
+                                'chart' => ['type' => 'line', 'height' => 300, 'toolbar' => ['show' => false]],
+                                'series' => [
+                                    ['name' => 'Balance', 'type' => 'candlestick', 'data' => $chart['candles']],
+                                    ['name' => 'Trend', 'type' => 'line', 'color' => '#C8942A', 'data' => $chart['swing']],
+                                ],
                                 'xaxis' => ['type' => 'datetime'],
                                 'plotOptions' => ['candlestick' => ['colors' => [
                                     'upward' => '#71dd37',
                                     'downward' => '#ff5b5b',
                                 ]]],
+                                'stroke' => ['width' => 2],
                                 'dataLabels' => ['enabled' => false],
                             ];
                         @endphp

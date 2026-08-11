@@ -35,5 +35,6 @@ class CandleChartRenderTest extends TestCase
         $response->assertSee('candlestick', false);
         $response->assertSee('upward', false);
         $response->assertSee('Balance', false);
+        $response->assertSee('Trend', false);
     }
 }

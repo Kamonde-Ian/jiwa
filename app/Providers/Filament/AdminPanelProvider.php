@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -35,7 +36,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('JIWA Admin')
             ->brandLogo(fn () => view('filament.brand'))
             ->brandLogoHeight('auto')
-            ->darkMode(false)
+            ->darkMode()
+            ->defaultThemeMode(ThemeMode::Dark)
             ->font(
                 'Public Sans',
                 'https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap',
@@ -43,7 +45,7 @@ class AdminPanelProvider extends PanelProvider
             )
             ->sidebarWidth('16.25rem')
             ->colors([
-                'primary' => Color::hex('#696cff'),
+                'primary' => Color::hex('#C8942A'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -72,6 +74,21 @@ class AdminPanelProvider extends PanelProvider
         FilamentView::registerRenderHook(
             PanelsRenderHook::HEAD_END,
             fn (): string => Blade::render('filament.admin-head'),
+        );
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_START,
+            fn (): string => Blade::render('partials.loading-screen'),
+        );
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::TOPBAR_END,
+            fn (): string => Blade::render('partials.theme-toggle', ['size' => 'theme-switch--xs']),
+        );
+
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::SIMPLE_PAGE_END,
+            fn (): string => Blade::render('filament.auth-theme-toggle'),
         );
     }
 }

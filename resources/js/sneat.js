@@ -17,6 +17,24 @@ function chartHasData(config) {
     });
 }
 
+function chartIsDark() {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+        || document.documentElement.classList.contains('dark');
+}
+
+function applyChartTheme(chart) {
+    if (!chart) return;
+    const dark = chartIsDark();
+    const fg = dark ? '#C9BFA3' : '#566a7f';
+    chart.updateOptions({
+        chart: { foreColor: fg },
+        grid: { borderColor: dark ? 'rgba(216, 168, 57, 0.2)' : '#eceef1' },
+        xaxis: { labels: { style: { colors: fg } } },
+        yaxis: { labels: { style: { colors: fg } } },
+        legend: { labels: { colors: fg } },
+    }, false);
+}
+
 function mountChart(element) {
     if (!window.ApexCharts || !(element instanceof HTMLElement)) return;
     if (!element.dataset.chart) return;
@@ -41,6 +59,7 @@ function mountChart(element) {
 
     const chart = new window.ApexCharts(element, config);
     chart.render();
+    applyChartTheme(chart);
 
     const entry = { chart, src: element.dataset.chart };
 
@@ -68,6 +87,10 @@ document.addEventListener('livewire:init', () => {
     if (!window.Livewire) return;
     window.Livewire.hook('morph.updated', mountAllCharts);
     window.Livewire.hook('morph.added', mountAllCharts);
+});
+
+window.addEventListener('theme-changed', () => {
+    mountedCharts.forEach((entry) => applyChartTheme(entry.chart));
 });
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -10,11 +10,11 @@ class InvestmentPlanSeeder extends Seeder
     public function run(): void
     {
         $plans = [
-            ['name' => 'Starter', 'duration_days' => 30, 'daily_rate' => 0.005, 'min_amount' => 50],
-            ['name' => 'Growth', 'duration_days' => 90, 'daily_rate' => 0.005, 'min_amount' => 200],
-            ['name' => 'Advantage', 'duration_days' => 180, 'daily_rate' => 0.005, 'min_amount' => 500],
-            ['name' => 'Pro', 'duration_days' => 365, 'daily_rate' => 0.005, 'min_amount' => 1000],
-            ['name' => 'Elite', 'duration_days' => 730, 'daily_rate' => 0.005, 'min_amount' => 5000],
+            ['name' => 'Starter', 'duration_days' => 30, 'daily_rate' => 0.001, 'min_amount' => 100, 'max_amount' => 499, 'description' => 'Entry'],
+            ['name' => 'Growth', 'duration_days' => 90, 'daily_rate' => 0.0012, 'min_amount' => 500, 'max_amount' => 1499, 'description' => 'Most Popular'],
+            ['name' => 'Advantage', 'duration_days' => 180, 'daily_rate' => 0.0015, 'min_amount' => 1500, 'max_amount' => 4999, 'description' => 'Better Value'],
+            ['name' => 'Pro', 'duration_days' => 365, 'daily_rate' => 0.0018, 'min_amount' => 5000, 'max_amount' => 9999, 'description' => 'Premium'],
+            ['name' => 'Elite', 'duration_days' => 730, 'daily_rate' => 0.002, 'min_amount' => 10000, 'max_amount' => null, 'description' => 'VIP'],
         ];
 
         foreach ($plans as $plan) {

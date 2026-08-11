@@ -42,7 +42,7 @@
                                     @endforeach
                                     <div class="d-flex justify-content-between align-items-center pt-2 small">
                                         <span class="text-muted">Minimum</span>
-                                        <span class="fw-semibold text-body">${{ number_format((float) config('jiwa.min_investment'), 0) }}</span>
+                                        <span class="fw-semibold text-body">${{ number_format((float) ($plans->first()?->min_amount ?? config('jiwa.min_investment')), 0) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -57,14 +57,23 @@
         <div class="container">
             <div class="row g-4 justify-content-center">
                 @foreach ($plans as $plan)
+                    @php
+                        $isPopular = $plan->description === 'Most Popular';
+                        $emoji = match ($plan->name) { 'Growth' => '⭐', 'Elite' => '👑', default => '' };
+                        $rangeLabel = $plan->max_amount === null
+                            ? '$' . number_format((float) $plan->min_amount, 0) . '+'
+                            : '$' . number_format((float) $plan->min_amount, 0) . ' – $' . number_format((float) $plan->max_amount, 0);
+                        $maxLabel = $plan->max_amount === null ? 'Unlimited' : '$' . number_format((float) $plan->max_amount, 0);
+                    @endphp
                     <div class="col-md-6 col-lg-4">
-                        <div class="card round-card lift h-100">
+                        <div class="card round-card lift h-100 {{ $isPopular ? 'plan-featured' : '' }}">
                             <div class="card-body p-4 d-flex flex-column">
                                 <div class="text-center">
-                                    <div class="badge badge-soft-primary mb-3 text-uppercase fs-6">{{ $plan->name }}</div>
+                                    <div class="badge badge-soft-primary mb-1 text-uppercase fs-6">{{ $plan->name }} {{ $emoji }}</div>
+                                    <div class="text-muted small mb-3 text-uppercase" style="letter-spacing:.5px">{{ $plan->description }}</div>
                                     <div class="fs-3 fw-bold text-body mb-1">{{ number_format($plan->daily_rate * 100, 2) }}%<span class="fs-6 text-muted fw-normal"> /day</span></div>
-                                    <div class="text-muted small mb-1">{{ $plan->duration_days }} days · min ${{ number_format($plan->min_amount, 2) }}</div>
-                                    <div class="text-muted small mb-3">≈ {{ number_format($plan->daily_rate * 365 * 100, 0) }}% annualized</div>
+                                    <div class="text-muted small mb-3">{{ $plan->duration_days }} days · {{ $rangeLabel }}</div>
+                                    <div class="text-muted small mb-3">≈ {{ number_format($plan->daily_rate * 365 * 100, 1) }}% annualized</div>
                                 </div>
 
                                 <div class="my-2 text-start small">
@@ -73,15 +82,19 @@
                                         <span class="fw-semibold">${{ number_format($plan->min_amount, 2) }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between py-2">
-                                        <span class="text-muted">Daily return</span>
+                                        <span class="text-muted">Maximum deposit</span>
+                                        <span class="fw-semibold">{{ $maxLabel }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-2">
+                                        <span class="text-muted">Daily return (min)</span>
                                         <span class="fw-semibold text-body">${{ number_format($plan->min_amount * $plan->daily_rate, 2) }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between py-2">
-                                        <span class="text-muted">Profit at maturity</span>
+                                        <span class="text-muted">Profit at maturity (min)</span>
                                         <span class="fw-semibold text-success">${{ number_format($plan->min_amount * $plan->daily_rate * $plan->duration_days, 2) }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between py-2 border-bottom">
-                                        <span class="text-muted">Est. total payout</span>
+                                        <span class="text-muted">Est. total payout (min)</span>
                                         <span class="fw-semibold text-body">${{ number_format($plan->min_amount + $plan->min_amount * $plan->daily_rate * $plan->duration_days, 2) }}</span>
                                     </div>
                                 </div>
@@ -92,7 +105,7 @@
                                     @endforeach
                                 </ul>
 
-                                <a href="{{ route('register') }}" class="btn btn-primary w-100 mt-auto">Invest Now</a>
+                                <a href="{{ route('register') }}" class="btn {{ $isPopular ? 'btn-primary' : 'btn-outline-primary' }} w-100 mt-auto">Invest Now</a>
                             </div>
                         </div>
                     </div>
@@ -101,7 +114,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container">
             <div class="section-head mb-5">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-table-columns me-1"></i> Compare plans</span>
@@ -116,7 +129,8 @@
                             <thead>
                                 <tr>
                                     <th>Plan</th>
-                                    <th>Min. deposit</th>
+                                    <th>Positioning</th>
+                                    <th>Investment range</th>
                                     <th>Daily rate</th>
                                     <th>Annualized</th>
                                     <th>Duration</th>
@@ -125,11 +139,19 @@
                             </thead>
                             <tbody>
                                 @foreach ($plans as $plan)
+                                    @php
+                                        $isPopular = $plan->description === 'Most Popular';
+                                        $emoji = match ($plan->name) { 'Growth' => '⭐', 'Elite' => '👑', default => '' };
+                                        $rangeLabel = $plan->max_amount === null
+                                            ? '$' . number_format((float) $plan->min_amount, 0) . '+'
+                                            : '$' . number_format((float) $plan->min_amount, 0) . ' – $' . number_format((float) $plan->max_amount, 0);
+                                    @endphp
                                     <tr>
-                                        <td class="fw-semibold">{{ $plan->name }}</td>
-                                        <td>${{ number_format($plan->min_amount, 2) }}</td>
+                                        <td class="fw-semibold">{{ $plan->name }} {{ $emoji }}</td>
+                                        <td class="text-muted">{{ $plan->description }}</td>
+                                        <td>{{ $rangeLabel }}</td>
                                         <td>{{ number_format($plan->daily_rate * 100, 2) }}%</td>
-                                        <td>≈ {{ number_format($plan->daily_rate * 365 * 100, 0) }}%</td>
+                                        <td>≈ {{ number_format($plan->daily_rate * 365 * 100, 1) }}%</td>
                                         <td>{{ $plan->duration_days }} days</td>
                                         <td class="text-end fw-semibold">${{ number_format($plan->min_amount + $plan->min_amount * $plan->daily_rate * $plan->duration_days, 2) }}</td>
                                     </tr>
@@ -148,7 +170,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container">
             <div class="section-head mb-5">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-wallet me-1"></i> Wallets</span>
@@ -188,15 +210,15 @@
 
             <div class="stats-band row g-4 p-4 p-md-4 mt-4 text-center">
                 <div class="col-6 col-md-3">
-                    <div class="stat-value">{{ number_format((float) config('jiwa.default_daily_rate') * 100, 1, '.', '') }}%</div>
-                    <div class="small">Daily interest</div>
+                    <div class="stat-value">{{ number_format((float) $plans->min('daily_rate') * 100, 2) }}% – {{ number_format((float) $plans->max('daily_rate') * 100, 2) }}%</div>
+                    <div class="small">Daily interest range</div>
                 </div>
                 <div class="col-6 col-md-3">
                     <div class="stat-value">24h</div>
                     <div class="small">Interest credit cycle</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-value">${{ number_format((float) config('jiwa.min_investment'), 0) }}</div>
+                    <div class="stat-value">${{ number_format((float) $plans->min('min_amount'), 0) }}</div>
                     <div class="small">Minimum investment</div>
                 </div>
                 <div class="col-6 col-md-3">
@@ -207,7 +229,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container" style="max-width:44rem">
             <div class="section-head mb-4">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-circle-question me-1"></i> Plan FAQ</span>
@@ -219,7 +241,7 @@
                     $planFaqs = [
                         ['q' => 'How and when is interest credited?', 'a' => 'Interest accrues daily at your plan\'s rate and is credited to your earnings wallet automatically each day. No manual claims required.'],
                         ['q' => 'What happens when my plan matures?', 'a' => 'At maturity your invested principal is released back to your principal wallet, and all accumulated profit stays in your earnings wallet — ready to reinvest or withdraw.'],
-                        ['q' => 'Can I invest more than the minimum?', 'a' => 'Yes. You can invest any amount above the plan minimum. Your projected returns scale proportionally with the amount invested.'],
+                        ['q' => 'Can I invest more than the minimum?', 'a' => 'Yes. Each plan accepts investments from its minimum up to its maximum deposit limit (the Elite plan is unlimited). Your projected returns scale proportionally with the amount invested.'],
                         ['q' => 'Can I invest in multiple plans at once?', 'a' => 'Absolutely. There is no limit on the number of active investments you can hold across different plans.'],
                         ['q' => 'What cryptocurrencies can I use to fund my plan?', 'a' => 'You can deposit Bitcoin (BTC), Ethereum (ETH), or USDT (TRC-20 / ERC-20) into your principal wallet, then invest from the wallet balance.'],
                     ];

@@ -24,22 +24,7 @@
                     <div class="hero-visual">
                         <div class="card round-card gradient-glow">
                             <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="small fw-semibold text-body">Portfolio Balance</div>
-                                    <span class="badge badge-soft-success">+2.4% today</span>
-                                </div>
-                                <div class="fs-3 fw-bold text-body">$ {{ number_format(12_480.50, 2) }}</div>
-
-                                <div class="my-4" id="hero-chart"></div>
-
-                                <div class="d-flex justify-content-between border-top pt-3 mt-2 small">
-                                    <span class="text-muted">Daily return</span>
-                                    <span class="fw-semibold text-body">+$54.20</span>
-                                </div>
-                                <div class="d-flex justify-content-between border-top py-2 small">
-                                    <span class="text-muted">Total earned</span>
-                                    <span class="fw-semibold text-body">$2,194.10</span>
-                                </div>
+                                <div id="hero-chart"></div>
                             </div>
                         </div>
                     </div>
@@ -51,19 +36,19 @@
     <section class="py-5">
         <div class="container">
             <div class="stats-band row g-4 p-4 p-md-5 text-center">
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-3">
                     <div class="stat-value">500+</div>
                     <div class="small">Active investors</div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-3">
                     <div class="stat-value">$2.4M</div>
                     <div class="small">Total invested</div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-3">
                     <div class="stat-value">40+</div>
                     <div class="small">Countries served</div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-3">
                     <div class="stat-value">24/7</div>
                     <div class="small">Dedicated support</div>
                 </div>
@@ -116,7 +101,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container">
             <div class="section-head mb-5">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-coins me-1"></i> Investment plans</span>
@@ -126,21 +111,34 @@
 
             <div class="row g-4 justify-content-center">
                 @foreach (\App\Models\InvestmentPlan::where('is_active', true)->orderBy('min_amount')->get() as $plan)
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card round-card lift h-100">
+                    @php
+                        $isPopular = $plan->description === 'Most Popular';
+                        $emoji = match ($plan->name) { 'Growth' => '⭐', 'Elite' => '👑', default => '' };
+                        $rangeLabel = $plan->max_amount === null
+                            ? '$' . number_format((float) $plan->min_amount, 0) . '+'
+                            : '$' . number_format((float) $plan->min_amount, 0) . '–' . number_format((float) $plan->max_amount, 0);
+                        $maxLabel = $plan->max_amount === null ? 'Unlimited' : '$' . number_format((float) $plan->max_amount, 0);
+                    @endphp
+                    <div class="col-sm-6 col-md-4 col-xl">
+                        <div class="card round-card lift h-100 {{ $isPopular ? 'plan-featured' : '' }}">
                             <div class="card-body p-4 text-center">
-                                <div class="badge badge-soft-primary mb-3 text-uppercase fs-6">{{ $plan->name }}</div>
+                                <div class="badge badge-soft-primary mb-1 text-uppercase fs-6">{{ $plan->name }} {{ $emoji }}</div>
+                                <div class="text-muted small mb-3 text-uppercase" style="letter-spacing:.5px">{{ $plan->description }}</div>
                                 <div class="fs-3 fw-bold text-body mb-1">{{ number_format($plan->daily_rate * 100, 2) }}%<span class="fs-6 text-muted fw-normal"> /day</span></div>
-                                <div class="text-muted small mb-3">{{ $plan->duration_days }} days · min ${{ number_format($plan->min_amount, 2) }}</div>
+                                <div class="text-muted small mb-3">{{ $plan->duration_days }} days · {{ $rangeLabel }}</div>
                                 <div class="d-flex justify-content-between border-top py-2 small">
                                     <span class="text-muted">Minimum</span>
                                     <span class="fw-semibold">${{ number_format($plan->min_amount, 2) }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between py-2 small">
-                                    <span class="text-muted">Est. total return</span>
+                                    <span class="text-muted">Maximum</span>
+                                    <span class="fw-semibold">{{ $maxLabel }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between py-2 small">
+                                    <span class="text-muted">Est. total return (min)</span>
                                     <span class="fw-semibold text-success">${{ number_format($plan->min_amount + $plan->min_amount * $plan->daily_rate * $plan->duration_days, 2) }}</span>
                                 </div>
-                                <a href="{{ route('register') }}" class="btn btn-primary w-100 mt-3">Invest Now</a>
+                                <a href="{{ route('register') }}" class="btn {{ $isPopular ? 'btn-primary' : 'btn-outline-primary' }} w-100 mt-3">Invest Now</a>
                             </div>
                         </div>
                     </div>
@@ -180,7 +178,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container">
             <div class="section-head mb-5">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-shield-halved me-1"></i> Why us</span>
@@ -216,7 +214,7 @@
             </div>
 
             <div class="row g-4 justify-content-center text-center">
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-2">
                     <div class="card round-card lift h-100">
                         <div class="card-body py-4">
                             <div class="icon-badge icon-badge-lg mx-auto mb-3" style="color:#f7931a;background:rgba(247,147,26,.12)"><i class="fa-brands fa-bitcoin"></i></div>
@@ -225,7 +223,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-2">
                     <div class="card round-card lift h-100">
                         <div class="card-body py-4">
                             <div class="icon-badge icon-badge-lg mx-auto mb-3" style="color:#627eea;background:rgba(98,126,234,.12)"><i class="fa-brands fa-ethereum"></i></div>
@@ -234,7 +232,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-2">
                     <div class="card round-card lift h-100">
                         <div class="card-body py-4">
                             <div class="icon-badge icon-badge-lg mx-auto mb-3" style="color:#26a17b;background:rgba(38,161,123,.12)"><i class="fa-solid fa-coins"></i></div>
@@ -243,7 +241,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-2">
                     <div class="card round-card lift h-100">
                         <div class="card-body py-4">
                             <div class="icon-badge icon-badge-lg mx-auto mb-3" style="color:#26a17b;background:rgba(38,161,123,.12)"><i class="fa-solid fa-coins"></i></div>
@@ -252,7 +250,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-2">
                     <div class="card round-card lift h-100">
                         <div class="card-body py-4">
                             <div class="icon-badge icon-badge-lg mx-auto mb-3" style="color:#26a17b;background:rgba(38,161,123,.12)"><i class="fa-solid fa-coins"></i></div>
@@ -261,7 +259,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
+                <div class="col-6 col-md-3 col-xl-2">
                     <div class="card round-card lift h-100">
                         <div class="card-body py-4">
                             <div class="icon-badge icon-badge-lg mx-auto mb-3" style="color:#f0b90b;background:rgba(240,185,11,.12)"><i class="fa-solid fa-coins"></i></div>
@@ -274,7 +272,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container">
             <div class="section-head mb-5">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-comments me-1"></i> Testimonials</span>
@@ -331,7 +329,7 @@
         </div>
     </section>
 
-    <section class="py-5 text-center text-white" style="background:linear-gradient(135deg,#696cff,#5f61e6)">
+    <section class="py-5 text-center text-white" style="background:linear-gradient(135deg,#E6B947,#C8942A 55%,#986817)">
         <div class="container py-3">
             <h2 class="text-white mb-3">Ready to start earning?</h2>
             <p class="mb-4 text-white-50">Join hundreds of investors building long-term wealth with JIWA.</p>
@@ -345,13 +343,257 @@
     window.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById('hero-chart');
         if (el && window.ApexCharts) {
-            new ApexCharts(el, {
-                chart: { type: 'area', height: 180, toolbar: { show: false }, sparkline: { enabled: true } },
-                series: [{ name: 'Balance', data: [100, 120, 115, 140, 138, 165, 158, 190, 210, 240, 235, 268] }],
-                stroke: { curve: 'smooth', width: 2.5, colors: ['#696cff'] },
-                fill: { gradient: { opacityFrom: 0.25, opacityTo: 0 } },
-                colors: ['#696cff'],
-            }).render();
+            const AXIS = '#8a94a6';
+            const GOLD = '#C8942A';
+            const BLUE = '#2962ff';
+            const SELL = '#f23645';
+            const UP = '#16a34a';
+            const DOWN = '#dc2626';
+
+            const N = 30; // candles on screen
+            const STEP_MS = 1400; // new candle every 1.4s
+            let startTs = Date.now() - N * 1400;
+            let t = 0;
+            let state = 100;
+            let data = []; // {x, y:[open, high, low, close]}
+            let drawn = {}; // annotation ids currently on the chart
+            let markerSeq = 0;
+
+            // Realistic market model: gentle upward bias, multi-scale waves,
+            // mean reversion to recent closes and bounded noise.
+            const nextClose = () => {
+                const drift = 0.09;
+                const wave =
+                    1.8 * Math.sin(t / 9) +
+                    1.1 * Math.sin(t / 4.3) +
+                    0.45 * Math.sin(t / 1.9);
+                const closes = data.slice(-8).map((d) => d.y[3]);
+                const sma = closes.length ? closes.reduce((a, b) => a + b, 0) / closes.length : state;
+                const reversion = (sma - state) * 0.10;
+                const noise = (Math.random() - 0.5) * 0.9;
+                return Math.max(40, state + drift + wave + reversion + noise);
+            };
+
+            const pushCandle = () => {
+                const open = state;
+                const close = nextClose();
+                const high = Math.max(open, close) + Math.random() * 1.1;
+                const low = Math.min(open, close) - Math.random() * 1.1;
+                data.push({
+                    x: new Date(startTs + t * STEP_MS),
+                    y: [open, high, low, close],
+                });
+                state = close;
+            };
+
+            const buildData = () => {
+                data = [];
+                state = 100;
+                startTs = Date.now() - N * STEP_MS;
+                t = 0;
+                for (let i = 0; i < N; i++) {
+                    t++;
+                    pushCandle();
+                }
+            };
+
+            // The line curve: each point is the midpoint of the candle's
+            // high and low, so it moves with the candle ranges.
+            const marketData = () => data.map((d) => ({
+                x: d.x,
+                y: (d.y[1] + d.y[2]) / 2,
+            }));
+
+            buildData();
+
+            const chart = new ApexCharts(el, {
+                chart: {
+                    type: 'candlestick',
+                    height: 230,
+                    toolbar: { show: false },
+                    zoom: { enabled: false },
+                    animations: { enabled: true, easing: 'easeinout', speed: 500, dynamicAnimation: { enabled: true, speed: 300 } },
+                },
+                series: [
+                    { name: 'Price', type: 'candlestick', data },
+                    { name: 'Market', type: 'line', data: marketData() },
+                ],
+                plotOptions: {
+                    candlestick: {
+                        colors: { upward: UP, downward: DOWN },
+                        wick: { useFillColor: true },
+                    },
+                },
+                stroke: { curve: 'straight', width: [2, 1.5], colors: [GOLD, GOLD] },
+                colors: [GOLD, GOLD],
+                legend: { show: false },
+                xaxis: {
+                    type: 'datetime',
+                    labels: { show: true, datetimeUTC: false, style: { colors: AXIS, fontSize: '11px' }, formatter: (val) => new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                yaxis: {
+                    opposite: true,
+                    labels: { show: true, style: { colors: AXIS, fontSize: '11px' }, formatter: (v) => v.toFixed(2) },
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                },
+                grid: {
+                    show: true,
+                    borderColor: '#e6e8ec',
+                    strokeDashArray: 0,
+                    position: 'back',
+                    xaxis: { lines: { show: true } },
+                    yaxis: { lines: { show: true } },
+                },
+                dataLabels: { enabled: false },
+                tooltip: { enabled: false },
+            });
+            chart.render();
+
+            const refreshChartTheme = () => {
+                const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const fg = dark ? '#C9BFA3' : AXIS;
+                chart.updateOptions({
+                    chart: { foreColor: fg },
+                    grid: { borderColor: dark ? 'rgba(216, 168, 57, 0.2)' : '#e6e8ec' },
+                    xaxis: { labels: { style: { colors: fg } } },
+                    yaxis: { labels: { style: { colors: fg } } },
+                }, false);
+            };
+            window.addEventListener('theme-changed', refreshChartTheme);
+
+            // ---- MT5-style position simulation ----
+            // Walk the candles and simulate trades. There is always an open
+            // position: a long when price is above the short EMA (blue line),
+            // a short when below it (red line). When take-profit or stop-loss
+            // is hit the position closes and a new one opens on the same
+            // candle, so the dashed line is always present.
+            const simulateTrades = () => {
+                let pos = null;
+                let ema = null;
+                const items = [];
+
+                const lineColor = (dir) => (dir === 'buy' ? BLUE : SELL);
+
+                const openPos = (i, d, dir) => {
+                    pos = { dir, entry: d.y[3], openX: d.x, lineId: 'pos-line-' + (++markerSeq) };
+                    const id = 'entry-' + (++markerSeq);
+                    items.push({
+                        id,
+                        kind: 'point',
+                        opts: {
+                            id,
+                            x: d.x,
+                            y: d.y[3],
+                            marker: { size: 6, fillColor: lineColor(dir), strokeColor: '#ffffff', strokeWidth: 1.5 },
+                            label: {
+                                text: (dir === 'buy' ? 'BUY ▲ ' : 'SELL ▼ ') + d.y[3].toFixed(2),
+                                borderColor: lineColor(dir),
+                                offsetY: -12,
+                                style: { background: lineColor(dir), color: '#fff', fontSize: '10px', fontWeight: 700, padding: { left: 4, right: 4, top: 2, bottom: 2 } },
+                            },
+                        },
+                    });
+                };
+
+                for (let i = 0; i < data.length; i++) {
+                    const d = data[i];
+                    const [o, hi, lo, c] = d.y;
+                    ema = ema === null ? c : c * 0.4 + ema * 0.6;
+
+                    if (!pos) {
+                        openPos(i, d, c >= ema ? 'buy' : 'sell');
+                        continue;
+                    }
+
+                    const isBuy = pos.dir === 'buy';
+                    const tp = isBuy ? pos.entry * 1.012 : pos.entry * 0.988;
+                    const sl = isBuy ? pos.entry * 0.988 : pos.entry * 1.012;
+                    const hitTp = isBuy ? hi >= tp : lo <= tp;
+                    const hitSl = isBuy ? lo <= sl : hi >= sl;
+
+                    if (hitTp || hitSl) {
+                        const closedDir = pos.dir;
+                        const exitY = hitTp ? tp : sl;
+                        const id = 'exit-' + (++markerSeq);
+                        items.push({
+                            id,
+                            kind: 'point',
+                            opts: {
+                                id,
+                                x: d.x,
+                                y: exitY,
+                                marker: { size: 5, fillColor: DOWN, strokeColor: '#ffffff', strokeWidth: 1.5 },
+                            },
+                        });
+                        pos = null;
+                        // Immediately open the next trade in the opposite
+                        // direction, so the blue (buy) and red (sell) lines
+                        // both appear and a line is always present.
+                        openPos(i, d, closedDir === 'buy' ? 'sell' : 'buy');
+                    }
+                }
+
+                if (pos) {
+                    const color = lineColor(pos.dir);
+                    items.push({
+                        id: pos.lineId,
+                        kind: 'y',
+                        opts: {
+                            id: pos.lineId,
+                            y: pos.entry,
+                            borderColor: color,
+                            strokeDashArray: 4,
+                            label: {
+                                text: (pos.dir === 'buy' ? 'BUY ▲ ' : 'SELL ▼ ') + pos.entry.toFixed(2),
+                                position: 'left',
+                                offsetX: 10,
+                                style: { background: color, color: '#fff', fontSize: '11px', fontWeight: 700, padding: { left: 6, right: 6, top: 3, bottom: 3 } },
+                            },
+                        },
+                    });
+                }
+
+                // Drop markers that have scrolled off the visible window.
+                const minX = data.length ? data[0].x : 0;
+                return items.filter((a) => a.kind === 'y' || a.opts.x >= minX);
+            };
+
+            const syncAnnotations = (items) => {
+                const ids = new Set(items.map((a) => a.id));
+                Object.keys(drawn).forEach((id) => {
+                    if (!ids.has(id)) {
+                        try { chart.removeAnnotation(id); } catch (e) {}
+                        delete drawn[id];
+                    }
+                });
+                items.forEach((a) => {
+                    if (!drawn[a.id]) {
+                        if (a.kind === 'y') chart.addYaxisAnnotation(a.opts);
+                        else chart.addPointAnnotation(a.opts);
+                        drawn[a.id] = true;
+                    }
+                });
+            };
+
+            const update = () => {
+                chart.updateSeries([
+                    { name: 'Price', type: 'candlestick', data },
+                    { name: 'Market', type: 'line', data: marketData() },
+                ]);
+                syncAnnotations(simulateTrades());
+            };
+
+            syncAnnotations(simulateTrades());
+
+            setInterval(() => {
+                t++;
+                pushCandle();
+                if (data.length > N) data = data.slice(-N);
+                update();
+            }, STEP_MS);
         }
     });
 </script>

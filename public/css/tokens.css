@@ -1,0 +1,123 @@
+/* =====================================================================
+   JIWA — Royal Gold & Emerald design tokens
+   Single source of truth for the platform color system.
+   Imported by admin.css and auth.css; mirrors the user-facing
+   (marketing/sneat) brand values.
+   ===================================================================== */
+
+:root {
+    color-scheme: dark;
+
+    /* ---------- Raw palette ---------- */
+    --royal-deep-black: #0A0A0A;   /* Main background */
+    --royal-black-shadow: #151515; /* Background gradients/shadows */
+    --royal-dark-gold: #986817;    /* Gold shadows/depth */
+    --royal-bronze-gold: #B47F1F;  /* Darker gold areas */
+    --royal-rich-gold: #C8942A;    /* Main gold gradient */
+    --royal-metallic-gold: #D8A839;/* Logo / text */
+    --royal-bright-gold: #E6B947;  /* Highlighted gold */
+    --royal-light-gold: #F2CC5E;   /* Bright highlights */
+    --royal-pale-gold: #F0DC8A;    /* Strong highlights */
+    --royal-champagne: #FDF3C0;    /* Extreme highlights */
+    --royal-dark-green: #103F13;   /* Green shadows */
+    --royal-deep-emerald: #1F621E; /* Main green */
+    --royal-emerald: #2E8029;      /* Logo elements */
+    --royal-medium-green: #479D39; /* Green highlights */
+    --royal-dark-brown-gold: #372305; /* Gold shadow areas */
+
+    /* ---------- Semantic roles ---------- */
+    --color-bg: var(--royal-deep-black);
+    --color-bg-raised: var(--royal-black-shadow);
+    --color-surface: var(--royal-black-shadow);
+    --color-surface-1: #101010;
+    --color-surface-2: #1C1A15;
+    --color-surface-3: #221F17;
+
+    --color-primary: var(--royal-rich-gold);
+    --color-primary-bright: var(--royal-bright-gold);
+    --color-primary-strong: var(--royal-metallic-gold);
+    --color-accent: var(--royal-emerald);
+    --color-accent-bright: var(--royal-medium-green);
+
+    --color-text: #EDE6D2;
+    --color-text-soft: #C9BFA3;
+    --color-heading: var(--royal-champagne);
+    --color-muted: rgba(240, 220, 138, 0.55);
+    --color-faint: rgba(240, 220, 138, 0.38);
+
+    --color-border: rgba(216, 168, 57, 0.22);
+    --color-border-strong: var(--royal-bronze-gold);
+    --color-border-faint: rgba(216, 168, 57, 0.12);
+
+    --color-danger: #BC4B33;
+    --color-danger-strong: #A23C27;
+    --color-ink: #1B1104;
+
+    /* ---------- Brand gradients ---------- */
+    --gradient-gold:
+        linear-gradient(135deg, var(--royal-bright-gold) 0%, var(--royal-metallic-gold) 35%, var(--royal-rich-gold) 70%, var(--royal-dark-gold) 100%);
+    --gradient-gold-soft:
+        linear-gradient(135deg, rgba(230, 185, 71, 0.14) 0%, rgba(200, 148, 42, 0.06) 100%);
+    --gradient-emerald:
+        linear-gradient(135deg, var(--royal-medium-green) 0%, var(--royal-emerald) 55%, var(--royal-deep-emerald) 100%);
+    --gradient-hero:
+        linear-gradient(160deg, var(--royal-dark-brown-gold) 0%, var(--royal-dark-gold) 45%, var(--royal-rich-gold) 100%);
+    --gradient-night:
+        radial-gradient(110% 130% at 15% 0%, var(--royal-black-shadow) 0%, var(--royal-deep-black) 60%);
+
+    /* ---------- Brand shadows ---------- */
+    --shadow-gold-md: 0 0.6rem 1.4rem rgba(152, 104, 23, 0.35);
+    --shadow-gold-lg: 0 1rem 2.5rem rgba(152, 104, 23, 0.45);
+    --shadow-gold-ring: 0 0 0 0.2rem rgba(216, 168, 57, 0.18);
+    --shadow-emerald-md: 0 0.5rem 1.25rem rgba(31, 98, 30, 0.4);
+}
+
+/* =====================================================================
+   Light theme — flips the semantic roles while keeping the gold/emerald
+   brand. The <html> element carries data-theme="light" via /js/theme.js.
+   ===================================================================== */
+:root[data-theme='light'] {
+    color-scheme: light;
+
+    /* ---------- Semantic roles ---------- */
+    --color-bg: #F8F6F0;
+    --color-bg-raised: #FFFFFF;
+    --color-surface: #FFFFFF;
+    --color-surface-1: #FFFFFF;
+    --color-surface-2: #F3EEE2;
+    --color-surface-3: #EBE4D2;
+
+    --color-primary: var(--royal-rich-gold);
+    --color-primary-bright: var(--royal-metallic-gold);
+    --color-primary-strong: var(--royal-dark-gold);
+    --color-accent: var(--royal-deep-emerald);
+    --color-accent-bright: var(--royal-medium-green);
+
+    --color-text: #3B3427;
+    --color-text-soft: #6B6252;
+    --color-heading: #241D10;
+    --color-muted: rgba(109, 87, 42, 0.62);
+    --color-faint: rgba(109, 87, 42, 0.4);
+
+    --color-border: rgba(152, 104, 23, 0.28);
+    --color-border-strong: var(--royal-dark-gold);
+    --color-border-faint: rgba(152, 104, 23, 0.12);
+
+    --color-danger: #B4422A;
+    --color-danger-strong: #9C3822;
+    --color-ink: #1B1104;
+
+    /* ---------- Brand gradients ---------- */
+    --gradient-gold-soft:
+        linear-gradient(135deg, rgba(230, 185, 71, 0.18) 0%, rgba(200, 148, 42, 0.08) 100%);
+    --gradient-hero:
+        linear-gradient(160deg, var(--royal-metallic-gold) 0%, var(--royal-rich-gold) 50%, var(--royal-bright-gold) 100%);
+    --gradient-night:
+        radial-gradient(110% 130% at 15% 0%, var(--color-surface) 0%, var(--color-bg) 60%);
+
+    /* ---------- Brand shadows ---------- */
+    --shadow-gold-md: 0 0.6rem 1.4rem rgba(152, 104, 23, 0.18);
+    --shadow-gold-lg: 0 1rem 2.5rem rgba(152, 104, 23, 0.22);
+    --shadow-gold-ring: 0 0 0 0.2rem rgba(200, 148, 42, 0.22);
+    --shadow-emerald-md: 0 0.5rem 1.25rem rgba(31, 98, 30, 0.2);
+}

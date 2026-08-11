@@ -103,7 +103,7 @@
                                 'chart' => ['type' => 'area', 'toolbar' => ['show' => false], 'height' => 320],
                                 'series' => [['name' => 'Earnings Balance', 'data' => $chart['values']]],
                                 'xaxis' => ['categories' => $chart['labels'], 'labels' => ['style' => ['colors' => '#566a7f']]],
-                                'colors' => ['#696cff'],
+                                'colors' => ['#D8A839'],
                                 'stroke' => ['curve' => 'smooth'],
                                 'dataLabels' => ['enabled' => false],
                                 'fill' => ['opacity' => 0.2],

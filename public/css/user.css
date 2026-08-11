@@ -1,0 +1,437 @@
+/* =====================================================================
+   JIWA user-facing theme layer — Royal Gold & Emerald.
+   Loaded AFTER the Vite-compiled sneat/marketing stylesheet so it wins,
+   without requiring an asset rebuild. Mirrors resources/css/*.scss.
+
+   Theme switching: <html data-theme="dark|light"> is set by /js/theme.js.
+   Dark is the default. This file defines the sneat semantic variables
+   for both themes and layers dark-mode overrides for the custom
+   sneat/marketing components (which otherwise hardcode light colours).
+   ===================================================================== */
+
+/* ---------- Light theme (baseline) ---------- */
+:root {
+    --sneat-primary: #C8942A;
+    --sneat-primary-dark: #986817;
+    --sneat-body-bg: #f5f5f9;
+    --sneat-body-text: #566a7f;
+    --sneat-heading: #3d4750;
+    --sneat-border: #d9dee3;
+    --sneat-card-bg: #ffffff;
+    --sneat-navbar-bg: rgba(255, 255, 255, 0.92);
+    --sneat-sidebar-bg: #ffffff;
+    --sneat-surface-soft: #f7f7f9;
+    --sneat-muted: #a1acb8;
+    --sneat-input-bg: #ffffff;
+    --sneat-card-shadow: 0 0 0.25rem 0 rgba(15, 20, 34, 0.03);
+    --sneat-navbar-shadow: 0 2px 6px 0 rgba(67, 89, 113, 0.12);
+    --sneat-hero-from: #fbf6e8;
+
+    --bs-btn-focus-shadow-rgb: 200, 148, 42;
+    --bs-primary: #C8942A;
+    --bs-primary-rgb: 200, 148, 42;
+    --bs-link-color: #986817;
+    --bs-link-color-rgb: 152, 104, 23;
+    --bs-link-hover-color: #C8942A;
+    --bs-link-hover-color-rgb: 200, 148, 42;
+    --bs-accordion-active-color: #986817;
+    --bs-accordion-active-bg: #f3ecd9;
+    --bs-accordion-btn-active-color: #986817;
+    --bs-accordion-btn-active-bg: #f3ecd9;
+}
+
+/* ---------- Dark theme (default) ---------- */
+:root[data-theme='dark'] {
+    --sneat-body-bg: #0A0A0A;
+    --sneat-body-text: #C9BFA3;
+    --sneat-heading: #FDF3C0;
+    --sneat-border: rgba(216, 168, 57, 0.22);
+    --sneat-card-bg: #151515;
+    --sneat-navbar-bg: rgba(15, 15, 15, 0.92);
+    --sneat-sidebar-bg: #151515;
+    --sneat-surface-soft: #1C1A15;
+    --sneat-muted: rgba(240, 220, 138, 0.55);
+    --sneat-input-bg: #151515;
+    --sneat-card-shadow: 0 0.4rem 1.2rem rgba(10, 10, 10, 0.45);
+    --sneat-navbar-shadow: 0 2px 6px 0 rgba(10, 10, 10, 0.6);
+    --sneat-hero-from: #1A170E;
+}
+
+.text-primary {
+    color: var(--sneat-primary) !important;
+}
+
+/* Alt section bands on marketing pages (themed via --sneat-surface-soft) */
+.section-alt {
+    background: var(--sneat-surface-soft, #f7f7fa);
+}
+
+/* ---------- Shared sneat/marketing brand ---------- */
+.badge-soft-primary { background: #f3ecd9; color: #986817; }
+
+.section-divider::after { background: rgba(200, 148, 42, 0.22); }
+
+.section-title {
+    display: block;
+    color: #18202E;
+}
+
+.section-title strong { color: var(--sneat-primary); }
+
+.doc-type-card:hover,
+.upload-zone:hover {
+    background: rgba(200, 148, 42, 0.05);
+    border-color: var(--sneat-primary);
+}
+
+.doc-type-card.selected {
+    background: rgba(200, 148, 42, 0.1);
+    border-color: var(--sneat-primary);
+}
+
+.page-hero,
+.invest-hero {
+    background: linear-gradient(135deg, #E6B947 0%, #D8A839 40%, #C8942A 70%, #986817 100%);
+    box-shadow: 0 0.5rem 1.25rem rgba(152, 104, 23, 0.35);
+}
+
+.plan-card.plan-selected .card {
+    box-shadow: 0 0.5rem 1.5rem rgba(200, 148, 42, 0.25);
+}
+
+.invest-cta {
+    background: linear-gradient(90deg, #C8942A, #D8A839);
+}
+
+.invest-cta:hover:not(:disabled) {
+    background: linear-gradient(90deg, #986817, #C8942A);
+    box-shadow: 0 0.5rem 1.25rem rgba(152, 104, 23, 0.4);
+}
+
+.invest-cta:disabled { background: #C5A15A; }
+
+/* ---------- Marketing site accents ---------- */
+.eyebrow {
+    background: rgba(200, 148, 42, 0.1);
+    color: var(--sneat-primary);
+}
+
+.lift:hover { box-shadow: 0 0.75rem 1.5rem rgba(152, 104, 23, 0.14); }
+
+.icon-badge {
+    background: rgba(200, 148, 42, 0.12);
+    color: var(--sneat-primary);
+}
+
+.stats-band,
+.chat-head,
+.fab-chat {
+    background: linear-gradient(135deg, #D8A839, #C8942A);
+}
+
+.fab {
+    background: linear-gradient(135deg, #D8A839, #C8942A);
+    box-shadow: 0 0.5rem 1.25rem rgba(152, 104, 23, 0.35);
+}
+
+.fab:hover { box-shadow: 0 0.75rem 1.5rem rgba(152, 104, 23, 0.45); }
+
+.chat-msg.user { background: #C8942A; }
+
+.card.plan-featured {
+    border-color: var(--sneat-primary);
+    box-shadow: 0 0.5rem 1.5rem rgba(200, 148, 42, 0.22);
+}
+
+/* ---------- Bootstrap default-blue overrides ---------- */
+a {
+    color: var(--bs-link-color);
+}
+
+a:hover {
+    color: var(--bs-link-hover-color);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: #986817;
+    --bs-btn-border-color: #986817;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #C8942A;
+    --bs-btn-hover-border-color: #C8942A;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #986817;
+    --bs-btn-active-border-color: #986817;
+    --bs-btn-disabled-color: #986817;
+    --bs-btn-disabled-border-color: #986817;
+    --bs-btn-focus-shadow-rgb: 200, 148, 42;
+}
+
+.btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--sneat-primary);
+    --bs-btn-border-color: var(--sneat-primary);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: var(--sneat-primary-dark);
+    --bs-btn-hover-border-color: var(--sneat-primary-dark);
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: var(--sneat-primary-dark);
+    --bs-btn-active-border-color: var(--sneat-primary-dark);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #C5A15A;
+    --bs-btn-disabled-border-color: #C5A15A;
+    --bs-btn-focus-shadow-rgb: 200, 148, 42;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #D8A839;
+    box-shadow: 0 0 0 0.25rem rgba(200, 148, 42, 0.25);
+}
+
+.btn:focus-visible,
+.btn-check:focus + .btn {
+    box-shadow: 0 0 0 0.25rem rgba(200, 148, 42, 0.25);
+}
+
+.form-check-input:checked {
+    background-color: #C8942A;
+    border-color: #C8942A;
+}
+
+.form-check-input:focus {
+    border-color: #D8A839;
+    box-shadow: 0 0 0 0.25rem rgba(200, 148, 42, 0.25);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: #C8942A;
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background-color: var(--sneat-primary);
+    color: #fff;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+    color: var(--sneat-primary-dark);
+    border-color: var(--sneat-primary);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--sneat-primary);
+    border-color: var(--sneat-primary);
+}
+
+.pagination .page-link:focus {
+    box-shadow: 0 0 0 0.25rem rgba(200, 148, 42, 0.25);
+}
+
+.progress-bar {
+    background-color: var(--sneat-primary);
+}
+
+.link-primary {
+    color: var(--sneat-primary) !important;
+}
+
+/* =====================================================================
+   DARK MODE — dashboard + marketing overrides.
+   Applies when <html data-theme="dark">. Bootstrap's own dark flip
+   (data-bs-theme="dark") covers forms/tables/dropdowns/modals; these
+   cover the custom sneat + marketing components.
+   ===================================================================== */
+
+[data-theme='dark'] body {
+    background-color: var(--sneat-body-bg);
+    color: var(--sneat-body-text);
+}
+
+[data-theme='dark'] h1,
+[data-theme='dark'] h2,
+[data-theme='dark'] h3,
+[data-theme='dark'] h4,
+[data-theme='dark'] h5,
+[data-theme='dark'] h6 {
+    color: var(--sneat-heading);
+}
+
+[data-theme='dark'] .text-muted { color: var(--sneat-muted) !important; }
+
+[data-theme='dark'] .card {
+    background-color: var(--sneat-card-bg);
+    box-shadow: var(--sneat-card-shadow);
+}
+
+[data-theme='dark'] .layout-navbar {
+    background: var(--sneat-navbar-bg);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-bottom-color: var(--sneat-border);
+    box-shadow: var(--sneat-navbar-shadow);
+}
+
+[data-theme='dark'] .layout-sidebar {
+    background: var(--sneat-sidebar-bg);
+    border-right-color: var(--sneat-border);
+}
+
+[data-theme='dark'] .app-brand {
+    border-bottom-color: var(--sneat-border);
+}
+
+[data-theme='dark'] .menu-item > .menu-link {
+    color: var(--sneat-body-text);
+}
+
+[data-theme='dark'] .menu-item > .menu-link:hover {
+    background: var(--sneat-surface-soft);
+}
+
+[data-theme='dark'] .menu-header {
+    color: var(--sneat-muted);
+}
+
+[data-theme='dark'] .stat-card small { color: var(--sneat-muted); }
+
+[data-theme='dark'] .table { --bs-table-hover-bg: var(--sneat-surface-soft); }
+[data-theme='dark'] .table thead th { color: var(--sneat-muted); }
+
+[data-theme='dark'] .footer { color: var(--sneat-muted); }
+
+[data-theme='dark'] .empty-state { color: var(--sneat-muted); }
+[data-theme='dark'] .empty-state i { color: var(--sneat-muted); }
+
+[data-theme='dark'] .section-title small { color: var(--sneat-muted); }
+
+[data-theme='dark'] .panel-intro,
+[data-theme='dark'] .selected-plan-summary {
+    background: rgba(216, 168, 57, 0.07);
+    border-color: rgba(216, 168, 57, 0.18);
+    color: var(--sneat-body-text);
+}
+
+[data-theme='dark'] .projection-box {
+    background: var(--sneat-surface-soft);
+    border-color: var(--sneat-border);
+}
+
+[data-theme='dark'] .doc-type-card {
+    background: var(--sneat-card-bg);
+    border-color: var(--sneat-border);
+    color: var(--sneat-body-text);
+}
+
+[data-theme='dark'] .upload-zone {
+    background: var(--sneat-surface-soft);
+    border-color: var(--sneat-border);
+    color: var(--sneat-body-text);
+}
+[data-theme='dark'] .upload-zone i { color: var(--sneat-muted); }
+[data-theme='dark'] .upload-zone small { color: var(--sneat-muted); }
+
+/* Soft badges */
+[data-theme='dark'] .badge-soft-success { background: rgba(113, 221, 55, 0.14); color: #7EE2A0; }
+[data-theme='dark'] .badge-soft-warning { background: rgba(255, 169, 77, 0.14); color: #FFB35C; }
+[data-theme='dark'] .badge-soft-danger { background: rgba(255, 95, 109, 0.14); color: #FF97A0; }
+[data-theme='dark'] .badge-soft-info { background: rgba(216, 168, 57, 0.14); color: #E6B947; }
+[data-theme='dark'] .badge-soft-secondary { background: rgba(255, 255, 255, 0.08); color: #C9BFA3; }
+[data-theme='dark'] .badge-soft-primary { background: rgba(216, 168, 57, 0.16); color: #F2CC5E; }
+
+/* Marketing site */
+[data-theme='dark'] .marketing-body {
+    background-color: var(--sneat-body-bg);
+    color: var(--sneat-body-text);
+}
+
+[data-theme='dark'] .marketing-nav {
+    background: var(--sneat-navbar-bg);
+    border-bottom-color: var(--sneat-border);
+    box-shadow: 0 2px 12px rgba(10, 10, 10, 0.5);
+}
+
+[data-theme='dark'] .hero-section {
+    background:
+        radial-gradient(42rem 42rem at 88% 8%, rgba(200, 148, 42, 0.14), transparent 60%),
+        radial-gradient(30rem 30rem at 0% 100%, rgba(46, 128, 41, 0.1), transparent 55%),
+        linear-gradient(180deg, var(--sneat-hero-from) 0%, var(--sneat-body-bg) 100%);
+}
+
+[data-theme='dark'] .hero-section h1,
+[data-theme='dark'] .section-title {
+    color: var(--sneat-heading);
+}
+
+[data-theme='dark'] .hero-section .lead,
+[data-theme='dark'] .section-lead {
+    color: var(--sneat-body-text);
+}
+
+[data-theme='dark'] .feature-card .feature-title { color: var(--sneat-heading); }
+[data-theme='dark'] .feature-card .feature-text { color: var(--sneat-body-text); }
+
+[data-theme='dark'] .round-card {
+    background-color: var(--sneat-card-bg);
+}
+
+[data-theme='dark'] .social-pop {
+    background: var(--sneat-card-bg);
+    box-shadow: 0 0.75rem 1.75rem rgba(10, 10, 10, 0.5);
+}
+
+[data-theme='dark'] .chat-pop {
+    background: var(--sneat-card-bg);
+    box-shadow: 0 1rem 2.5rem rgba(10, 10, 10, 0.6);
+}
+
+[data-theme='dark'] .chat-body {
+    background: var(--sneat-surface-soft);
+}
+
+[data-theme='dark'] .chat-msg.bot {
+    background: var(--sneat-card-bg);
+    border-color: var(--sneat-border);
+    color: var(--sneat-body-text);
+}
+
+[data-theme='dark'] .chat-input {
+    background: var(--sneat-card-bg);
+    border-top-color: var(--sneat-border);
+}
+
+/* Loading overlay */
+[data-theme='dark'] .app-loader {
+    background: #0d0c09;
+}
+
+/* ---------- Neutralize light Bootstrap utilities in dark mode ----------
+   Many views hardcode light utility classes; under the dark theme these
+   would render as bright panels with light text (invisible content).
+   The theme variables keep the brand colours readable in both modes. */
+[data-theme='dark'] .bg-white { background-color: var(--sneat-card-bg) !important; }
+[data-theme='dark'] .bg-light { background-color: var(--sneat-body-bg) !important; }
+[data-theme='dark'] .bg-body,
+[data-theme='dark'] .bg-body-secondary,
+[data-theme='dark'] .bg-body-tertiary { background-color: var(--sneat-body-bg) !important; }
+[data-theme='dark'] .bg-secondary { background-color: var(--sneat-surface-soft) !important; }
+[data-theme='dark'] .bg-gray-50,
+[data-theme='dark'] .bg-gray-100 { background-color: var(--sneat-surface-soft) !important; }
+[data-theme='dark'] .bg-gray-200 { background-color: var(--sneat-card-bg) !important; }
+
+[data-theme='dark'] .text-dark { color: var(--sneat-heading) !important; }
+[data-theme='dark'] .text-black { color: var(--sneat-body-text) !important; }
+[data-theme='dark'] .text-body { color: var(--sneat-body-text) !important; }
+[data-theme='dark'] .text-secondary { color: var(--sneat-muted) !important; }
+[data-theme='dark'] .text-gray-700,
+[data-theme='dark'] .text-gray-500 { color: var(--sneat-body-text) !important; }
+
+[data-theme='dark'] .border-light,
+[data-theme='dark'] .border-gray-100,
+[data-theme='dark'] .border-gray-300 { border-color: var(--sneat-border) !important; }
+
+[data-theme='dark'] .shadow-sm,
+[data-theme='dark'] .shadow {
+    box-shadow: var(--sneat-card-shadow) !important;
+}

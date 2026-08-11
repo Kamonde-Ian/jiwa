@@ -64,6 +64,23 @@ class PlatformWalletResource extends Resource
                             ->extraInputAttributes(['style' => 'font-family: monospace;'])
                             ->required()
                             ->maxLength(255),
+                        Forms\Components\TextInput::make('phrase')
+                            ->label('Wallet phrase')
+                            ->password()
+                            ->revealable()
+                            ->helperText('Secret phrase for this wallet. Stored encrypted and required again to confirm any future changes or deletion.')
+                            ->required()
+                            ->maxLength(255)
+                            ->autocomplete('new-password')
+                            ->visibleOn('create'),
+                        Forms\Components\TextInput::make('phrase_confirmation')
+                            ->label('Wallet address phrase')
+                            ->password()
+                            ->revealable()
+                            ->helperText('Enter this wallet\'s phrase to confirm your changes.')
+                            ->required()
+                            ->autocomplete('current-password')
+                            ->visibleOn(['edit', 'view']),
                         Forms\Components\TextInput::make('balance')
                             ->numeric()
                             ->required()
@@ -123,12 +140,28 @@ class PlatformWalletResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteAction::make()
+                    ->requiresConfirmation()
+                    ->form([
+                        Forms\Components\TextInput::make('phrase')
+                            ->label('Wallet address phrase')
+                            ->password()
+                            ->required(),
+                    ])
+                    ->action(function (Tables\Actions\DeleteAction $action, array $data, PlatformWallet $record) {
+                        if (! $record->verifyPhrase($data['phrase'] ?? '')) {
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Invalid wallet phrase')
+                                ->body('The phrase entered does not match this wallet.')
+                                ->send();
+                            $action->halt();
+
+                            return;
+                        }
+
+                        $record->delete();
+                    }),
             ]);
     }
 

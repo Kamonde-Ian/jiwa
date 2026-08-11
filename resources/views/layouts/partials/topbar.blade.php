@@ -10,6 +10,8 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
+            @include('partials.theme-toggle', ['size' => 'theme-switch--xs'])
+
             <a href="{{ route('deposits.index') }}" class="btn btn-primary btn-sm" wire:navigate>
                 <i class="fa-solid fa-circle-down me-1"></i> Deposit
             </a>

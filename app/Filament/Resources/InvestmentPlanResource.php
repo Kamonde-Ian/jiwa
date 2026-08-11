@@ -63,6 +63,14 @@ class InvestmentPlanResource extends Resource
                             ->numeric()
                             ->required()
                             ->minValue(0),
+                        Forms\Components\TextInput::make('max_amount')
+                            ->label('Maximum amount (leave empty for unlimited)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->placeholder('Unlimited'),
+                        Forms\Components\TextInput::make('description')
+                            ->label('Positioning (e.g. Entry, Most Popular, VIP)')
+                            ->maxLength(255),
                         Forms\Components\Toggle::make('is_active')
                             ->label('Active')
                             ->default(true),
@@ -85,6 +93,12 @@ class InvestmentPlanResource extends Resource
                     ->formatStateUsing(fn ($state) => number_format((float) $state * 100, 2).'%')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('min_amount')->money('USD')->sortable(),
+                Tables\Columns\TextColumn::make('max_amount')
+                    ->label('Max amount')
+                    ->money('USD')
+                    ->placeholder('Unlimited')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('description')->label('Positioning')->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->label('Active')->boolean(),
                 Tables\Columns\IconColumn::make('is_custom')->label('Custom')->boolean(),
                 Tables\Columns\TextColumn::make('investments_count')

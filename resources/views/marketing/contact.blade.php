@@ -80,7 +80,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container" style="max-width:44rem">
             <div class="section-head mb-4">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-paper-plane me-1"></i> Send a message</span>

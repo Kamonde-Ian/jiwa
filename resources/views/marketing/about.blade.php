@@ -113,7 +113,7 @@
         </div>
     </section>
 
-    <section class="py-5" style="background:#f7f7fa">
+    <section class="py-5 section-alt">
         <div class="container">
             <div class="section-head mb-5">
                 <span class="eyebrow mb-3"><i class="fa-solid fa-star me-1"></i> Why us</span>

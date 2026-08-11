@@ -30,6 +30,10 @@ class InvestmentService
                 throw new \InvalidArgumentException("Minimum investment for this plan is \${$min}.");
             }
 
+            if ($plan->max_amount !== null && $amount > (float) $plan->max_amount) {
+                throw new \InvalidArgumentException("Maximum investment for this plan is \${$plan->max_amount}.");
+            }
+
             if (! $plan->is_active) {
                 throw new \InvalidArgumentException('This investment plan is not active.');
             }

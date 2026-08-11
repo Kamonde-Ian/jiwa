@@ -11,6 +11,8 @@ class InvestmentPlan extends BaseModel
         'duration_days',
         'daily_rate',
         'min_amount',
+        'max_amount',
+        'description',
         'is_active',
         'is_custom',
     ];
@@ -18,6 +20,7 @@ class InvestmentPlan extends BaseModel
     protected $casts = [
         'daily_rate' => 'decimal:6',
         'min_amount' => 'decimal:2',
+        'max_amount' => 'decimal:2',
         'is_active' => 'boolean',
         'is_custom' => 'boolean',
     ];

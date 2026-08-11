@@ -43,7 +43,7 @@
                 </div>
             </div>
 
-            <div class="mt-4 p-3 rounded-3" style="background:#f7f7fa">
+            <div class="mt-4 p-3 rounded-3 section-alt">
                 <div class="table-responsive">
                     <table class="table table-sm mb-0 align-middle">
                         <thead>
@@ -56,6 +56,16 @@
                             <tr>
                                 <td class="text-muted">Plan</td>
                                 <td class="text-end fw-semibold">{{ $this->selectedPlan->name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Investment range</td>
+                                <td class="text-end fw-semibold">
+                                    @if ($this->selectedPlan->max_amount === null)
+                                        ${{ number_format((float) $this->selectedPlan->min_amount, 0) }}+
+                                    @else
+                                        ${{ number_format((float) $this->selectedPlan->min_amount, 0) }} – ${{ number_format((float) $this->selectedPlan->max_amount, 0) }}
+                                    @endif
+                                </td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Daily rate</td>

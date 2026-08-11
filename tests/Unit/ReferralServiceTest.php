@@ -161,8 +161,9 @@ class ReferralServiceTest extends TestCase
         $this->assertTrue($this->service->isQualified($qualified));
 
         // Qualification minimum is respected.
+        \App\Support\PlatformSettings::set('referral_qualification_minimum', 200);
         $barelyQualified = $this->fundedUser();
-        $this->investmentService->create($barelyQualified, InvestmentPlan::factory()->create(), 50);
+        $this->investmentService->create($barelyQualified, InvestmentPlan::factory()->create(), 150);
         $this->assertFalse($this->service->isQualified($barelyQualified));
     }
 }

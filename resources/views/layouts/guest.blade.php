@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        <script src="{{ asset('js/theme.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('css/theme-switch.css') }}">
+
         <title>{{ $title ?? config('app.name', 'JIWA') }} — {{ config('app.name') }}</title>
+
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,15 +27,18 @@
         @stack('styles')
     </head>
     <body class="marketing-body auth-body">
-        <div class="auth-shell">
+        @include('partials.loading-screen')
+        <div class="auth-shell" style="position:relative">
+            <div style="position:absolute;top:1.25rem;right:1.5rem;z-index:5">
+                @include('partials.theme-toggle', ['size' => 'theme-switch--xs'])
+            </div>
             <div class="auth-card" data-auth-card>
                 <div class="auth-card-glow" data-auth-card-glow></div>
 
                 <div class="auth-card-left">
                     <div class="auth-card-inner">
                         <div class="auth-brand">
-                            <span class="auth-brand-icon"><i class="fa-solid fa-coins"></i></span>
-                            <span class="auth-brand-name">{{ config('app.name', 'JIWA') }}</span>
+                            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} logo" style="height:3.5rem;width:auto;">
                         </div>
 
                         @if (filled($brand ?? null))

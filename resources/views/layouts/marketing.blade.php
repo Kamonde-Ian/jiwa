@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        <script src="{{ asset('js/theme.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('css/theme-switch.css') }}">
+
         <title>@yield('title', config('app.name', 'JIWA'))</title>
         <meta name="description" content="@yield('description', 'Grow your wealth with JIWA — a secure, transparent crypto investment platform with daily returns.')">
+
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,14 +23,16 @@
             @vite(['resources/js/marketing.js'])
             <link rel="stylesheet" href="{{ Vite::asset('resources/css/marketing.scss') }}" data-navigate-track="reload">
         @endif
+        <link rel="stylesheet" href="{{ asset('css/user.css') }}?v={{ filemtime(public_path('css/user.css')) }}" data-navigate-track="reload">
         @stack('styles')
     </head>
     <body class="marketing-body">
+        @include('partials.loading-screen')
         @php $appEmail = 'support@'.strtolower((string) parse_url(config('app.url'), PHP_URL_HOST)); @endphp
         <nav class="marketing-nav navbar navbar-expand-lg">
             <div class="container">
                 <a class="navbar-brand" href="{{ route('home') }}" wire:navigate>
-                    <i class="fa-solid fa-coins me-2"></i>{{ config('app.name', 'JIWA') }}
+                    <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} logo" style="height:2.75rem;width:auto;">
                 </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#marketingNav"
@@ -42,9 +49,16 @@
                         <li class="nav-item"><a class="nav-link" href="{{ route('public.contact') }}" wire:navigate>Contact</a></li>
                     </ul>
 
-                    <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                    <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-3">
+                        <li class="nav-item d-flex align-items-center mb-2 mb-lg-0 ms-lg-2 me-lg-1">
+                            @include('partials.theme-toggle')
+                        </li>
                         @auth
-                            <li class="nav-item"><a class="btn btn-primary btn-sm px-3" href="{{ route('dashboard') }}" wire:navigate>Go to Dashboard</a></li>
+                            @if (auth()->user()->hasRole('admin'))
+                                <li class="nav-item"><a class="btn btn-primary btn-sm px-3" href="{{ \Filament\Facades\Filament::getPanel('admin')->getUrl() }}">Go to Admin</a></li>
+                            @else
+                                <li class="nav-item"><a class="btn btn-primary btn-sm px-3" href="{{ route('dashboard') }}" wire:navigate>Go to Dashboard</a></li>
+                            @endif
                         @else
                             <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Log in</a></li>
                             <li class="nav-item"><a class="btn btn-primary btn-sm px-3" href="{{ route('register') }}">Get Started</a></li>
@@ -62,8 +76,8 @@
             <div class="container pb-5">
                 <div class="row g-4">
                     <div class="col-lg-4">
-                        <div class="d-flex align-items-center gap-2 mb-3 fw-bold fs-5 text-white">
-                            <i class="fa-solid fa-coins"></i>{{ config('app.name', 'JIWA') }}
+                        <div class="mb-3">
+                            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} logo" style="height:2.5rem;width:auto;">
                         </div>
                         <p class="small text-white-50 mb-3" style="max-width:21rem">
                             Empowering individuals to grow wealth through transparent, secure crypto-powered investments.

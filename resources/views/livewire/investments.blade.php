@@ -23,7 +23,7 @@
                                 'chart' => ['type' => 'donut', 'height' => 280, 'toolbar' => ['show' => false]],
                                 'series' => $allocationChart['values'],
                                 'labels' => $allocationChart['labels'],
-                                'colors' => ['#696cff', '#71dd37', '#03c3ec', '#ffab00', '#ff3e1d'],
+                                'colors' => ['#D8A839', '#71dd37', '#986817', '#ffab00', '#ff3e1d'],
                                 'stroke' => ['width' => 0],
                                 'dataLabels' => ['enabled' => false],
                                 'legend' => ['position' => 'bottom', 'fontSize' => '13px'],

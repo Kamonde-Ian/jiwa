@@ -6,7 +6,7 @@
             <div>
                 <strong>Investment placed!</strong>
                 You committed ${{ number_format($done['amount'], 2) }} to {{ $done['plan'] }} at
-                {{ $done['rate'] * 100 }}% daily. It matures on {{ $done['matures_at'] }}.
+                {{ number_format($done['rate'] * 100, 2) }}% daily. It matures on {{ $done['matures_at'] }}.
             </div>
         </div>
     @endif
@@ -26,7 +26,7 @@
         'subtitle' => 'Pick a plan, choose your amount and let your capital grow every day.',
         'stats' => [
             ['label' => 'Available', 'value' => '$' . number_format($principal, 2)],
-            ['label' => 'Daily Rate', 'value' => number_format($heroRate, 1) . '%'],
+            ['label' => 'Daily Rate', 'value' => number_format($heroRate, 2) . '%'],
             ['label' => 'Active', 'value' => $activeInvestments],
         ],
     ])
@@ -42,7 +42,9 @@
                         @foreach ($plans as $plan)
                             @php
                                 $isSelected = $selectedPlanId === $plan->id;
-                                $isPopular = $loop->index === intdiv($plans->count(), 2);
+                                $isPopular = $plan->description === 'Most Popular';
+                                $planEmoji = match ($plan->name) { 'Growth' => '⭐', 'Elite' => '👑', default => '' };
+                                $planMax = $plan->max_amount === null ? 'Unlimited' : '$' . number_format((float) $plan->max_amount, 0);
                             @endphp
                             <div class="col-12 col-md-6">
                                 <label class="plan-card {{ $isSelected ? 'plan-selected' : '' }}">
@@ -51,13 +53,13 @@
                                     <div class="card h-100">
                                         <div class="plan-top"></div>
                                         @if ($isPopular)
-                                            <span class="plan-badge"><i class="fa-solid fa-star me-1"></i>Popular</span>
+                                            <span class="plan-badge"><i class="fa-solid fa-star me-1"></i>Most Popular</span>
                                         @endif
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-start mb-3">
                                                 <div>
                                                     <h6 class="fw-semibold mb-1">
-                                                        {{ $plan->name }}
+                                                        {{ $plan->name }} {{ $planEmoji }}
                                                         @if ($isSelected)
                                                             <i class="fa-solid fa-circle-check text-primary ms-1"></i>
                                                         @endif
@@ -67,12 +69,12 @@
                                                     </span>
                                                 </div>
                                                 <div class="text-end">
-                                                    <div class="plan-rate">{{ $plan->daily_rate * 100 }}%</div>
+                                                    <div class="plan-rate">{{ number_format($plan->daily_rate * 100, 2) }}%</div>
                                                     <small class="text-muted">daily</small>
                                                 </div>
                                             </div>
                                             <div class="mb-2">
-                                                <span class="badge badge-soft-primary">From ${{ number_format($plan->min_amount, 2) }}</span>
+                                                <span class="badge badge-soft-primary">${{ number_format((float) $plan->min_amount, 0) }} – {{ $planMax }}</span>
                                             </div>
                                             <ul class="list-unstyled mb-0">
                                                 <li class="plan-feature"><i class="fa-solid fa-circle-check"></i>Daily returns credited every 24h</li>
@@ -106,7 +108,7 @@
                                     <small class="text-muted text-uppercase fw-semibold">Selected plan</small>
                                     <div class="fw-semibold">{{ $selectedPlan->name }}</div>
                                 </div>
-                                <span class="badge badge-soft-primary">{{ $selectedPlan->daily_rate * 100 }}% / day</span>
+                                <span class="badge badge-soft-primary">{{ number_format($selectedPlan->daily_rate * 100, 2) }}% / day</span>
                             </div>
                         </div>
                     @else
@@ -116,18 +118,24 @@
                     @endif
 
                     <form wire:submit="invest">
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold" for="amount">Investment Amount (USD)</label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" min="{{ config('jiwa.min_investment') }}"
-                                    id="amount" wire:model.live="amount" class="form-control"
-                                    placeholder="Minimum ${{ number_format(config('jiwa.min_investment'), 2) }}">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold" for="amount">Investment Amount (USD)</label>
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="0.01" min="{{ $selectedPlan?->min_amount ?? config('jiwa.min_investment') }}"
+                                        id="amount" wire:model.live="amount" class="form-control"
+                                        placeholder="Minimum ${{ number_format((float) ($selectedPlan?->min_amount ?? config('jiwa.min_investment')), 0) }}">
+                                </div>
+                                @if ($selectedPlan)
+                                    <div class="text-muted small mt-1">
+                                        This plan accepts ${{ number_format((float) $selectedPlan->min_amount, 0) }} –
+                                        {{ $selectedPlan->max_amount === null ? 'Unlimited' : '$' . number_format((float) $selectedPlan->max_amount, 0) }}.
+                                    </div>
+                                @endif
+                                @error('amount')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
-                            @error('amount')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
 
                         <div class="d-flex gap-2 mb-3">
                             <button type="button" class="btn btn-sm btn-outline-primary quick-chip flex-fill"
@@ -172,7 +180,7 @@
                                     <i class="fa-solid fa-coins me-1"></i>
                                     Estimated profit of <strong>${{ number_format($projectedEarnings, 2) }}</strong>
                                     over {{ $selectedPlan->duration_days }} days at
-                                    {{ $selectedPlan->daily_rate * 100 }}% daily.
+                                    {{ number_format($selectedPlan->daily_rate * 100, 2) }}% daily.
                                 </div>
                             @endif
                         </div>

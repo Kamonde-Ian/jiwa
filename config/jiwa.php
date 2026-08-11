@@ -17,7 +17,7 @@ return [
     /*
      * Minimum investment amount.
      */
-    'min_investment' => env('JIWA_MIN_INVESTMENT', 50),
+    'min_investment' => env('JIWA_MIN_INVESTMENT', 100),
 
     /*
      * Referral commission rate (spec conflict: 3% vs 5% — admin-configurable).

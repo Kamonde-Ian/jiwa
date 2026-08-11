@@ -101,7 +101,7 @@
                                 'chart' => ['type' => 'bar', 'height' => 240, 'toolbar' => ['show' => false]],
                                 'series' => [['name' => 'Commissions', 'data' => $commissionChart['values']]],
                                 'xaxis' => ['categories' => $commissionChart['labels'], 'labels' => ['style' => ['colors' => '#566a7f']]],
-                                'colors' => ['#696cff'],
+                                'colors' => ['#D8A839'],
                                 'plotOptions' => ['bar' => ['columnWidth' => '50%', 'borderRadius' => 3]],
                                 'stroke' => ['show' => false],
                                 'dataLabels' => ['enabled' => false],

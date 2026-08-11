@@ -1,8 +1,7 @@
 <aside class="layout-sidebar">
     <div class="app-brand">
         <a href="{{ route('dashboard') }}" class="app-brand-link" wire:navigate>
-            <span class="app-brand-logo"><i class="fa-solid fa-seedling text-primary"></i></span>
-            <span class="app-brand-text">{{ config('app.name') }}</span>
+            <span class="app-brand-logo"><img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }} logo" style="height:2.75rem;width:auto;"></span>
         </a>
     </div>
 

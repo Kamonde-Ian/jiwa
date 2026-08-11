@@ -1,11 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="dark">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        <script src="{{ asset('js/theme.js') }}"></script>
+        <link rel="stylesheet" href="{{ asset('css/theme-switch.css') }}">
+
         <title>{{ isset($title) && $title ? $title.' — '.config('app.name') : config('app.name') }}</title>
+
+        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,9 +22,11 @@
             @vite(['resources/js/sneat.js'])
             <link rel="stylesheet" href="{{ Vite::asset('resources/css/sneat.scss') }}" data-navigate-track="reload">
         @endif
+        <link rel="stylesheet" href="{{ asset('css/user.css') }}?v={{ filemtime(public_path('css/user.css')) }}" data-navigate-track="reload">
         @stack('styles')
     </head>
     <body>
+        @include('partials.loading-screen')
         <div class="layout-wrapper">
             @include('layouts.partials.sidebar')
             <div class="layout-sidebar-backdrop" id="layout-sidebar-backdrop" aria-hidden="true"></div>

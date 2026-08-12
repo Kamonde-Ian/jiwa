@@ -142,4 +142,40 @@ return [
      * user creation.
      */
     'password_min_length' => env('JIWA_PASSWORD_MIN_LENGTH', 10),
+
+    /*
+     * Custodial trading product ("JIWA Bot Fund"). A simulated strategy engine
+     * trades the users' pooled deposits; the pool's daily P&L is what produces
+     * the daily investment returns credited to each participant.
+     */
+    'trading_enabled' => env('JIWA_TRADING_ENABLED', true),
+
+    /*
+     * Name and symbol of the default pooled fund shown on the Trade page and
+     * used by trading:run-bot when no pool exists yet.
+     */
+    'trading_pool_name' => env('JIWA_TRADING_POOL_NAME', 'JIWA Bot Fund'),
+    'trading_symbol' => env('JIWA_TRADING_SYMBOL', 'J-IWA'),
+
+    /*
+     * Starting unit price of the pool. NAV drifts with every daily session and
+     * a participant's position = units held * current NAV.
+     */
+    'trading_base_nav' => (float) env('JIWA_TRADING_BASE_NAV', 100),
+
+    /*
+     * Minimum and maximum USD a user may allocate into the pool.
+     */
+    'trading_min_allocate' => (float) env('JIWA_TRADING_MIN_ALLOCATE', 100),
+    'trading_max_allocate' => env('JIWA_TRADING_MAX_ALLOCATE', null),
+
+    /*
+     * Strategy parameters shaping the deterministic daily return: an average
+     * gain per day (percent), per-day volatility, and the probability any
+     * given day lands in the red. Results are seeded from the session date so
+     * they are stable and reproducible.
+     */
+    'trading_avg_daily_return_pct' => (float) env('JIWA_TRADING_AVG_DAILY_RETURN_PCT', 0.35),
+    'trading_daily_volatility_pct' => (float) env('JIWA_TRADING_DAILY_VOLATILITY_PCT', 0.75),
+    'trading_loss_probability' => (float) env('JIWA_TRADING_LOSS_PROBABILITY', 0.3),
 ];

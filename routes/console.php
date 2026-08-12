@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('investments:credit-interest')->dailyAt('00:10');
+Schedule::command('trading:run-bot')->dailyAt('00:20');

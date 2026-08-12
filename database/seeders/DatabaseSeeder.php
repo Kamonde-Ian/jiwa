@@ -63,6 +63,7 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->seedDemoActivity($user);
+        $this->seedTradingDemo($user);
     }
 
     /**
@@ -127,6 +128,39 @@ class DatabaseSeeder extends Seeder
                 $investment,
             );
             $tx->forceFill(['created_at' => $creditedOn])->save();
+        }
+    }
+
+    /**
+     * Seeding a pooled bot-fund with a backfilled trading history so the
+     * Deriv-style Trade page renders a real chart, position and daily results.
+     * The 30-day cycle runs the actual bot engine, so demo numbers are fully
+     * consistent with the ledger.
+     */
+    protected function seedTradingDemo(User $user): void
+    {
+        if ($user->poolAllocations()->exists()) {
+            return;
+        }
+
+        $service = app(\App\Domain\Trading\TradingBotService::class);
+        $pool = $service->pool();
+
+        if ($pool->sessions()->exists() || ! $pool->is_active) {
+            return;
+        }
+
+        try {
+            $service->allocate($user, $pool, 2000);
+
+            for ($i = 29; $i >= 0; $i--) {
+                if ($i === 0) {
+                    break; // leave today's session to the live bot run
+                }
+                $service->runDailyCycle(\Carbon\CarbonImmutable::today()->subDays($i));
+            }
+        } catch (\Throwable $e) {
+            logger()->warning('Bot fund demo seeding skipped.', ['error' => $e->getMessage()]);
         }
     }
 

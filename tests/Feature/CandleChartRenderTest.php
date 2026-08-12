@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Domain\Wallets\WalletService;
 use App\Models\User;
 use App\Models\Wallet;
+use App\Support\ChartSeries;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -40,10 +41,6 @@ class CandleChartRenderTest extends TestCase
 
     public function test_swing_line_alternates_between_highs_and_lows(): void
     {
-        $component = new \App\Livewire\Dashboard();
-        $method = new \ReflectionMethod(\App\Livewire\Dashboard::class, 'buildSwingSeries');
-        $method->setAccessible(true);
-
         $candles = [
             ['x' => 1000, 'y' => [100, 105, 99, 103]],
             ['x' => 2000, 'y' => [103, 110, 102, 108]], // HH
@@ -52,7 +49,7 @@ class CandleChartRenderTest extends TestCase
             ['x' => 5000, 'y' => [111, 113, 105, 106]],
         ];
 
-        $line = $method->invoke($component, $candles);
+        $line = ChartSeries::swingSeries($candles);
 
         $this->assertGreaterThanOrEqual(4, count($line));
 

@@ -85,6 +85,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Investment::class);
     }
 
+    public function poolAllocations(): HasMany
+    {
+        return $this->hasMany(PoolAllocation::class);
+    }
+
     public function deposits(): HasMany
     {
         return $this->hasMany(Deposit::class);

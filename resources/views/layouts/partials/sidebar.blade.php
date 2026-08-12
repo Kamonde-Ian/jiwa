@@ -25,6 +25,13 @@
         </li>
 
         <li class="menu-item">
+            <a href="{{ route('trade') }}" class="menu-link {{ request()->routeIs('trade') ? 'active' : '' }}" wire:navigate>
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Trade (Bot Fund)</span>
+            </a>
+        </li>
+
+        <li class="menu-item">
             <a href="{{ route('invest') }}" class="menu-link {{ request()->routeIs('invest') ? 'active' : '' }}" wire:navigate>
                 <i class="fa-solid fa-arrow-trend-up"></i>
                 <span>Invest</span>

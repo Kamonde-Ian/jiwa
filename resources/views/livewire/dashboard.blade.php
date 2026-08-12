@@ -20,7 +20,7 @@
                     @if (count($chart['candles']) > 0)
                         @php
                             $growthConfig = [
-                                'chart' => ['type' => 'line', 'height' => 300, 'toolbar' => ['show' => false]],
+                                'chart' => ['type' => 'candlestick', 'height' => 300, 'toolbar' => ['show' => false]],
                                 'series' => [
                                     ['name' => 'Balance', 'type' => 'candlestick', 'data' => $chart['candles']],
                                     ['name' => 'Trend', 'type' => 'line', 'color' => '#C8942A', 'data' => $chart['swing']],

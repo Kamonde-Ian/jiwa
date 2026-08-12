@@ -23,6 +23,8 @@ class RoleSeeder extends Seeder
         'view referral earnings',
         'view platform wallets',
         'manage platform wallets',
+        'view bot fund',
+        'manage bot fund',
         'view settings',
         'manage settings',
         'manage roles',

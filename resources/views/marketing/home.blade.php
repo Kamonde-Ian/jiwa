@@ -142,11 +142,57 @@
                             </div>
                         </div>
                     </div>
-                @endforeach
+@endforeach
             </div>
 
             <div class="text-center mt-4">
                 <a href="{{ route('public.plans') }}" class="link-more" wire:navigate>View all plans &amp; compare <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5">
+        <div class="container">
+            <div class="section-head mb-5">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-robot me-1"></i> Custodial trading</span>
+                <h2 class="section-title mb-2">Meet the <strong>{{ config('app.name') }} Bot Fund</strong></h2>
+                <p class="section-lead mb-0">A pooled JIWA fund traded around the clock by our automated strategy — its results are what produce your daily returns.</p>
+            </div>
+
+            <div class="marketing-trade-card">
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-7">
+                        <h4 class="fw-bold mb-3">Your capital compounds from real trading, not a fixed rate</h4>
+                        <ul class="trade-feature-list mb-4">
+                            <li><i class="fa-solid fa-circle-check"></i>Allocate JIWA from your principal wallet into the pooled Bot Fund.</li>
+                            <li><i class="fa-solid fa-circle-check"></i>The bot trades the pooled deposits 24/7; daily results are credited to your Earnings Wallet.</li>
+                            <li><i class="fa-solid fa-circle-check"></i>Track the fund's candlestick chart, NAV and your position live on the Trade hub.</li>
+                            <li><i class="fa-solid fa-circle-check"></i>Release funds back to your wallet anytime — fully transparent ledger on every payout.</li>
+                        </ul>
+                        <div class="d-flex flex-wrap gap-2 mb-4">
+                            <a href="{{ route('register') }}" class="btn btn-primary btn-lg px-4">Start Trading <i class="fa-solid fa-arrow-right ms-2"></i></a>
+                            <a href="{{ route('public.faq') }}" class="btn btn-outline-primary btn-lg px-4" wire:navigate>See FAQ</a>
+                        </div>
+                        <div class="risk-disclaimer">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <div>
+                                <strong>Risk disclaimer.</strong>&nbsp;Trading involves substantial risk of loss. Returns are variable — the bot can post losses, which reduce both your position's value and the NAV of the pooled fund. Past performance does not guarantee future results. Nothing on this page is financial advice; only trade with funds you can afford to lose.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 d-none d-lg-block">
+                        <div class="trade-visual">
+                            <div class="icon-badge icon-badge-lg mb-3"><i class="fa-solid fa-robot"></i></div>
+                            <div class="fs-5 fw-bold mb-1">JIWA Bot Fund</div>
+                            <div class="text-muted small mb-4">Deterministic strategy · transparent ledger · daily settlement · custodied on-platform</div>
+                            <div class="fake-ticker">
+                                <span>Strategy <b>GridScalper</b></span>
+                                <span>Settlement <b>Every 24h</b></span>
+                                <span>Access <b>Live chart + NAV</b></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>

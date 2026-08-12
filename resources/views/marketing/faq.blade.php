@@ -60,6 +60,8 @@
                         ['q' => 'Can I invest in multiple plans at once?', 'a' => 'Yes. There is no limit on the number of active investments you can hold across different plans.'],
                         ['q' => 'Is my money secure?', 'a' => 'Yes. We use hashed passwords, KYC verification, two-factor authentication, TLS/SSL, and a full audit log of every transaction. Each deposit is confirmed against the blockchain before it is credited.'],
                         ['q' => 'What cryptocurrencies can I deposit?', 'a' => 'We support Bitcoin (BTC), Ethereum (ETH), BNB (BEP-20), and USDT on TRC-20, ERC-20, and BEP-20 networks.'],
+                        ['q' => 'What is the '.config('app.name').' Bot Fund?', 'a' => 'The Bot Fund is a custodial trading product: JIWA allocated by investors is pooled and traded 24/7 by an automated strategy. The bot\'s daily results are what produce your returns — profit days sweep payouts to your Earnings Wallet, while loss days reduce your position\'s value and the fund\'s net asset value. You can follow the fund\'s live candlestick chart, NAV, and your own position on the Trade hub, and release your funds back to your wallet at any time.'],
+                        ['q' => 'Is the Bot Fund risky?', 'a' => 'Yes. Trading involves substantial risk of loss. Returns are variable and the bot can post losses, which reduce your position\'s value and the pooled fund\'s NAV. Past performance does not guarantee future results, and nothing we publish is financial advice — only allocate funds you can afford to lose.'],
                     ];
                 @endphp
 

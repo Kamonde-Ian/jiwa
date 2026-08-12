@@ -489,3 +489,49 @@ a:hover {
 .derive-sell:hover:not(:disabled) { background: linear-gradient(180deg, #f0707a, #d04550); color: #fff; }
 
 .deriv-chart-card .card-body, .deriv-trade-card .card-body { display: flex; flex-direction: column; }
+
+/* ---------- Marketing: Bot Fund product section ---------- */
+.marketing-trade-card {
+    background:
+        radial-gradient(24rem 16rem at 96% 0%, rgba(200, 148, 42, 0.22), transparent 60%),
+        linear-gradient(135deg, #1b2330 0%, #0f141c 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 2.25rem;
+    color: #e8ecf3;
+    box-shadow: 0 1.5rem 3rem rgba(9, 14, 24, 0.4);
+    overflow: hidden;
+}
+
+.marketing-trade-card h4 { color: #ffffff; }
+
+.trade-feature-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .65rem; }
+.trade-feature-list li { display: flex; align-items: flex-start; gap: .6rem; font-size: .95rem; color: #cdd6e3; }
+.trade-feature-list li i { color: #71dd37; margin-top: .2rem; flex-shrink: 0; }
+
+.trade-visual {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 1.5rem;
+}
+.fake-ticker { display: grid; gap: .6rem; font-size: .85rem; color: #aab6c5; }
+.fake-ticker b { color: #ffffff; font-weight: 700; margin-left: .3rem; }
+
+.risk-disclaimer {
+    display: flex; align-items: flex-start; gap: .75rem;
+    background: rgba(224, 122, 45, 0.12);
+    border: 1px solid rgba(224, 122, 45, 0.35);
+    border-radius: 10px;
+    padding: .9rem 1rem;
+    font-size: .85rem;
+    line-height: 1.5;
+    color: #f3d9a8;
+}
+.risk-disclaimer i { color: #f2b84b; margin-top: .2rem; flex-shrink: 0; }
+
+.risk-disclaimer-card { border-color: rgba(224, 122, 45, 0.35); }
+.risk-disclaimer-card .card-body { background: rgba(224, 122, 45, 0.06); }
+[data-theme='dark'] .risk-disclaimer-card .card-body {
+    background: rgba(224, 122, 45, 0.1);
+}

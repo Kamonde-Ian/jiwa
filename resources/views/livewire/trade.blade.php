@@ -97,6 +97,7 @@
                         <div id="tradeMarketPanel"
                             data-pair="{{ $pair }}"
                             data-timeframe="{{ $timeframe }}"
+                            data-proxy="{{ route('trade.market.klines') }}"
                             class="chart-fill deriv-chart"
                             style="height: 360px;">
                             <div class="market-loading">Loading live candles…</div>
@@ -411,8 +412,6 @@
 @push('scripts')
 <script>
 (function () {
-    if (!window.ApexCharts) return;
-
     const SYMBOLS = { 'BTC/USDT': 'BTCUSDT', 'ETH/USDT': 'ETHUSDT', 'BNB/USDT': 'BNBUSDT' };
     const HOSTS = [
         'https://api.binance.com',
@@ -420,47 +419,63 @@
         'https://api1.binance.com',
         'https://api2.binance.com',
     ];
+    const TIMEOUT = 8000;
     const LIMIT = 250;
     const cache = new Map();
 
-    let panel = document.getElementById('tradeMarketPanel');
-    if (!panel) return;
-
-    let state = { pair: panel.dataset.pair || 'BTC/USDT', tf: panel.dataset.timeframe || '5m' };
+    let panel = null;
     let chart = null;
+    let state = { pair: 'BTC/USDT', tf: '5m' };
+    let started = false;
 
     function symbolFor(pair) {
         return SYMBOLS[pair] || pair.replace('/', '').toUpperCase();
+    }
+
+    function toCandles(rows) {
+        return rows.map(function (r) {
+            if (Array.isArray(r.y)) {
+                return { x: r.x, y: [parseFloat(r.y[0]), parseFloat(r.y[1]), parseFloat(r.y[2]), parseFloat(r.y[3]), parseFloat(r.y[4])] };
+            }
+            return { x: r[0], y: [parseFloat(r[1]), parseFloat(r[2]), parseFloat(r[3]), parseFloat(r[4]), parseFloat(r[5])] };
+        });
+    }
+
+    async function fetchFrom(url) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), TIMEOUT);
+        try {
+            const res = await fetch(url, { signal: controller.signal, mode: 'cors' });
+            if (!res.ok) return null;
+            const rows = await res.json();
+            const data = Array.isArray(rows) && Array.isArray(rows[0]) ? rows : (rows && rows.candles);
+            if (!Array.isArray(data) || data.length === 0) return null;
+            return toCandles(data);
+        } catch (e) {
+            return null;
+        } finally {
+            clearTimeout(timer);
+        }
     }
 
     async function fetchKlines(pair, tf, limit) {
         const key = pair + '|' + tf;
         if (cache.has(key)) return cache.get(key);
 
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 9000);
+        const symbol = encodeURIComponent(symbolFor(pair));
+        const interval = encodeURIComponent(tf);
 
-        for (const host of HOSTS) {
-            const url = host + '/api/v3/klines?symbol=' + encodeURIComponent(symbolFor(pair))
-                + '&interval=' + encodeURIComponent(tf) + '&limit=' + limit;
-            try {
-                const res = await fetch(url, { signal: controller.signal, mode: 'cors' });
-                if (!res.ok) continue;
-                const rows = await res.json();
-                if (!Array.isArray(rows) || rows.length === 0) continue;
-
-                const candles = rows.map(function (r) {
-                    return { x: r[0], y: [parseFloat(r[1]), parseFloat(r[2]), parseFloat(r[3]), parseFloat(r[4]), parseFloat(r[5])] };
-                });
-
-                cache.set(key, candles);
-                clearTimeout(timer);
-                return candles;
-            } catch (e) { /* try next host */ }
+        const sources = HOSTS.map(function (host) {
+            return host + '/api/v3/klines?symbol=' + symbol + '&interval=' + interval + '&limit=' + limit;
+        });
+        if (panel && panel.dataset.proxy) {
+            sources.push(panel.dataset.proxy + '?pair=' + encodeURIComponent(pair) + '&interval=' + tf + '&limit=' + limit);
         }
 
-        clearTimeout(timer);
-        return null;
+        const results = await Promise.all(sources.map(fetchFrom));
+        const candles = results.find(Boolean) || null;
+        if (candles) cache.set(key, candles);
+        return candles;
     }
 
     function fmt(n, d) {
@@ -588,15 +603,14 @@
         const priceEl = document.getElementById('marketPrice');
         const openEl = document.getElementById('marketOpen');
         const changeEl = document.getElementById('marketChange');
-        const ids = ['market-ohlc-open', 'market-ohlc-high', 'market-ohlc-low', 'market-ohlc-price'];
 
-        if (label) label.textContent = pair;
+        label.textContent = pair;
         openEl.textContent = tick ? '$' + fmt(tick.open) : '—';
 
         if (!tick) {
             priceEl.textContent = '—';
             changeEl.textContent = '';
-            ids.forEach(function (id) {
+            ['market-ohlc-open', 'market-ohlc-high', 'market-ohlc-low', 'market-ohlc-price'].forEach(function (id) {
                 const el = document.getElementById(id);
                 if (el) el.textContent = '—';
             });
@@ -626,6 +640,7 @@
     }
 
     async function renderChart(force) {
+        if (!panel) return;
         if (!force && state.pair === panel.dataset.pair && state.tf === panel.dataset.timeframe && chart) return;
 
         state = { pair: panel.dataset.pair || 'BTC/USDT', tf: panel.dataset.timeframe || '5m' };
@@ -643,7 +658,7 @@
 
         if (!candles) {
             updateUI(state.pair, null);
-            panel.innerHTML = '<div class="empty-state"><i class="fa-solid fa-chart-line"></i><p class="mb-0">Live market data is unavailable right now.</p></div>';
+            panel.innerHTML = '<div class="empty-state"><i class="fa-solid fa-chart-line"></i><p class="mb-2">Live market data is unavailable right now.</p><button type="button" class="btn btn-sm btn-outline-primary market-retry">Retry</button></div>';
             return;
         }
 
@@ -665,6 +680,12 @@
     }
 
     document.addEventListener('click', function (e) {
+        if (!panel) return;
+        const retry = e.target.closest('.market-retry');
+        if (retry) {
+            renderChart(true);
+            return;
+        }
         const pairBtn = e.target.closest('.pair-chip');
         if (pairBtn) {
             const pair = pairBtn.dataset.marketPair;
@@ -697,11 +718,35 @@
         }
     }
 
-    registerHooks();
-    document.addEventListener('livewire:init', registerHooks);
-    document.addEventListener('livewire:navigated', registerHooks);
+    function start() {
+        if (started) return;
+        panel = document.getElementById('tradeMarketPanel');
+        if (!panel) return;
+        started = true;
 
-    renderChart(false);
+        registerHooks();
+        document.addEventListener('livewire:init', registerHooks);
+        document.addEventListener('livewire:navigated', registerHooks);
+
+        renderChart(false);
+    }
+
+    // sneat.js sets window.ApexCharts in a deferred module, so wait for it
+    // before booting instead of bailing silently.
+    function tryStart() {
+        if (window.ApexCharts && document.getElementById('tradeMarketPanel')) {
+            start();
+            return true;
+        }
+        return false;
+    }
+
+    if (!tryStart()) {
+        const interval = setInterval(function () {
+            if (tryStart()) clearInterval(interval);
+        }, 100);
+        window.addEventListener('load', function () { tryStart(); clearInterval(interval); });
+    }
 })();
 </script>
 @endpush

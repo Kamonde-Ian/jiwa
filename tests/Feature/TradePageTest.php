@@ -156,4 +156,29 @@ class TradePageTest extends TestCase
             ->assertOk()
             ->assertSee('$'.number_format($pool->min_allocate, 0));
     }
+
+    public function test_market_klines_proxy_returns_candles_for_supported_pairs(): void
+    {
+        $this->marketData->seedCandles('BTC/USDT', '5m', [50000, 50100, 50200]);
+
+        $this->getJson(route('trade.market.klines', ['pair' => 'BTC/USDT', 'interval' => '5m', 'limit' => 3]))
+            ->assertOk()
+            ->assertJsonCount(3, 'candles')
+            ->assertJsonPath('candles.0.x', fn ($x) => is_int($x))
+            ->assertJsonPath('candles.0.y.3', fn ($close) => abs($close - 50000) < 1);
+    }
+
+    public function test_market_klines_proxy_rejects_unknown_pairs(): void
+    {
+        $this->getJson(route('trade.market.klines', ['pair' => 'DOGE/USDT', 'interval' => '5m']))
+            ->assertStatus(400);
+    }
+
+    public function test_market_klines_proxy_reports_unavailable_when_market_empty(): void
+    {
+        $this->marketData->seedCandles('BTC/USDT', '5m', []);
+
+        $this->getJson(route('trade.market.klines', ['pair' => 'BTC/USDT', 'interval' => '5m']))
+            ->assertStatus(503);
+    }
 }

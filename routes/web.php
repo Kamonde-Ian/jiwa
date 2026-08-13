@@ -11,6 +11,7 @@ use App\Livewire\Statements;
 use App\Livewire\Wallets;
 use App\Livewire\Withdrawals;
 use App\Http\Controllers\MarketingController;
+use App\Http\Controllers\MarketKlinesController;
 use Illuminate\Support\Facades\Route;
 
 /* Public marketing pages */
@@ -28,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/wallets', Wallets::class)->name('wallets');
     Route::get('/trade', \App\Livewire\Trade::class)->name('trade');
+    Route::get('/trade/market/klines', MarketKlinesController::class)->name('trade.market.klines');
     Route::get('/invest', Invest::class)->name('invest');
     Route::get('/investments', Investments::class)->name('investments.index');
     Route::get('/deposits', Deposits::class)->name('deposits.index');

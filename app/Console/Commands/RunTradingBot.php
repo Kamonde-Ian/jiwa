@@ -20,6 +20,10 @@ class RunTradingBot extends Command
         $this->info("Participant payouts: {$result['paid']}");
         $this->info("Total payout: \${$result['pnl']}");
 
+        if ($result['paused'] > 0) {
+            $this->warn("Pools skipped (bot stopped): {$result['paused']}");
+        }
+
         Log::channel('daily')->info('trading:run-bot', $result);
 
         return self::SUCCESS;

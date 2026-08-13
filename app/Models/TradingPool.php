@@ -19,6 +19,7 @@ class TradingPool extends BaseModel
         'daily_return_pct',
         'description',
         'is_active',
+        'is_running',
     ];
 
     protected $casts = [
@@ -30,6 +31,7 @@ class TradingPool extends BaseModel
         'max_allocate' => 'decimal:2',
         'daily_return_pct' => 'decimal:4',
         'is_active' => 'boolean',
+        'is_running' => 'boolean',
     ];
 
     public function allocations(): HasMany

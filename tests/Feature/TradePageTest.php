@@ -181,4 +181,42 @@ class TradePageTest extends TestCase
         $this->getJson(route('trade.market.klines', ['pair' => 'BTC/USDT', 'interval' => '5m']))
             ->assertStatus(503);
     }
+
+    public function test_user_can_stop_and_restart_the_bot_from_the_trade_page(): void
+    {
+        app(TradingBotService::class)->pool();
+
+        $this->get(route('trade'))
+            ->assertOk()
+            ->assertSee('Stop bot')
+            ->assertDontSee('Start bot');
+
+        Livewire::test(Trade::class)
+            ->call('stopBot')
+            ->assertSet('pair', 'BTC/USDT');
+
+        $this->assertFalse(app(TradingBotService::class)->pool()->fresh()->is_running);
+
+        $this->get(route('trade'))
+            ->assertOk()
+            ->assertSee('Start bot')
+            ->assertSee('Bot paused');
+
+        Livewire::test(Trade::class)
+            ->call('startBot');
+
+        $this->assertTrue(app(TradingBotService::class)->pool()->fresh()->is_running);
+    }
+
+    public function test_trade_page_still_renderable_with_allocations_and_preview_when_bot_stopped(): void
+    {
+        $pool = app(TradingBotService::class)->pool();
+        $pool->update(['is_running' => false]);
+
+        $this->get(route('trade'))
+            ->assertOk()
+            ->assertSee($pool->name)
+            ->assertSee('Daily Bot Results')
+            ->assertSee('Start bot');
+    }
 }

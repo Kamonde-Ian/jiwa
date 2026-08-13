@@ -53,6 +53,16 @@ class Trade extends Component
         }
     }
 
+    public function startBot(TradingBotService $service): void
+    {
+        $service->setRunning($service->pool(), true);
+    }
+
+    public function stopBot(TradingBotService $service): void
+    {
+        $service->setRunning($service->pool(), false);
+    }
+
     public function setPanel(string $panel): void
     {
         $this->panel = in_array($panel, ['allocate', 'withdraw'], true) ? $panel : 'allocate';
@@ -123,6 +133,7 @@ class Trade extends Component
         $user = auth()->user();
         $pool = $service->pool();
         $nav = (float) $pool->nav;
+        $botRunning = (bool) $pool->is_running;
 
         $pairs = collect(PlatformSettings::config('jiwa.trading_pairs'))
             ->map(fn (array $p) => [
@@ -193,6 +204,7 @@ class Trade extends Component
         return view('livewire.trade', [
             'pool' => $pool,
             'nav' => $nav,
+            'botRunning' => $botRunning,
             'pair' => $this->pair,
             'timeframe' => $this->timeframe,
             'pairs' => $pairs,

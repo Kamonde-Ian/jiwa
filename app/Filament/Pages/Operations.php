@@ -3,6 +3,8 @@
 namespace App\Filament\Pages;
 
 use App\Domain\Investments\InvestmentService;
+use App\Domain\Trading\TradingBotService;
+use App\Models\TradingPool;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 
@@ -57,5 +59,44 @@ class Operations extends Page
     {
         $this->creditInterest();
         $this->processMaturities();
+    }
+
+    public function botPool(): TradingPool
+    {
+        return app(TradingBotService::class)->pool();
+    }
+
+    public function runBot(): void
+    {
+        $result = app(TradingBotService::class)->runDailyCycle();
+
+        activity('maintenance')
+            ->causedBy(auth()->user())
+            ->withProperties(['action' => 'bot_cycle_manual'] + $result)
+            ->log('Bot trading cycle run manually');
+
+        Notification::make()
+            ->title('Bot cycle complete')
+            ->body("Settled {$result['settled']} session(s), {$result['paid']} payout(s), skipped {$result['paused']} stopped pool(s).")
+            ->success()
+            ->send();
+    }
+
+    public function startBot(): void
+    {
+        app(TradingBotService::class)->setRunning($this->botPool(), true);
+
+        Notification::make()->title('Bot started')->success()->send();
+    }
+
+    public function stopBot(): void
+    {
+        app(TradingBotService::class)->setRunning($this->botPool(), false);
+
+        Notification::make()
+            ->title('Bot stopped')
+            ->body('No new sessions will be booked until it is restarted.')
+            ->warning()
+            ->send();
     }
 }

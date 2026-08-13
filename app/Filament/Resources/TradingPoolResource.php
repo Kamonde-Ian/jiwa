@@ -79,6 +79,10 @@ class TradingPoolResource extends Resource
                         Forms\Components\Toggle::make('is_active')
                             ->label('Accepting allocations')
                             ->default(true),
+                        Forms\Components\Toggle::make('is_running')
+                            ->label('Bot running')
+                            ->helperText('Pausing stops booking new daily sessions; existing allocations and withdrawals keep working.')
+                            ->default(true),
                     ])
                     ->columns(2),
             ]);
@@ -106,6 +110,11 @@ class TradingPoolResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean()
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('is_running')
+                    ->label('Bot')
+                    ->boolean()
+                    ->tooltip(fn ($state) => $state ? 'Bot running' : 'Bot stopped')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('nav_updated_at')
                     ->label('Last settled')

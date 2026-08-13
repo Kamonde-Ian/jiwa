@@ -223,4 +223,43 @@ class TradingBotServiceTest extends TestCase
         $this->assertSame($expected, $payouts);
         $this->assertGreaterThan(0, $payouts, 'Rising seeded days should produce payouts.');
     }
+
+    public function test_stopped_bot_skips_booking_new_sessions_but_leaves_pool_intact(): void
+    {
+        $user = User::factory()->create();
+        $this->wallets->credit($this->wallets->getOrCreate($user, Wallet::TYPE_PRINCIPAL), 1000, 'Funding');
+        $pool = $this->service->pool();
+        $this->service->allocate($user, $pool, 1000);
+
+        $this->service->setRunning($pool, false);
+        $day = CarbonImmutable::today()->subDays(1);
+        $this->marketData->seedDay($day->toDateString(), 'rise', 50000, 3.0);
+
+        $result = $this->service->runDailyCycle($day);
+
+        $this->assertSame(0, $result['settled'], 'Stopped pools must not book new sessions.');
+        $this->assertSame(1, $result['paused']);
+        $this->assertEquals(100, (float) $pool->fresh()->nav, 'NAV must not move while the bot is stopped.');
+        $this->assertSame(0, TradingSession::where('session_date', $day->toDateString())->count());
+        $this->assertSame(PoolAllocation::STATUS_ACTIVE, $pool->allocations()->first()->status);
+
+        $this->service->setRunning($pool, true);
+        $result = $this->service->runDailyCycle($day);
+
+        $this->assertSame(1, $result['settled'], 'Restarting resumes the daily cycle.');
+        $this->assertGreaterThan(100, (float) $pool->fresh()->nav);
+    }
+
+    public function test_set_running_toggles_and_persists_state(): void
+    {
+        $pool = $this->service->pool();
+
+        $this->assertTrue($pool->is_running);
+
+        $this->service->setRunning($pool, false);
+        $this->assertFalse($pool->fresh()->is_running);
+
+        $this->service->setRunning($pool, true);
+        $this->assertTrue($pool->fresh()->is_running);
+    }
 }

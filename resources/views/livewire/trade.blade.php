@@ -36,7 +36,27 @@
                         </span>
                     </div>
                     <small class="text-muted">Custodial · Bot-managed pooled JIWA</small>
+                    @if (! $botRunning)
+                        <div class="bot-paused-note d-inline-flex align-items-center gap-2 mt-1">
+                            <i class="fa-solid fa-circle-pause text-warning"></i>
+                            <span>Bot paused — no new sessions will be booked until restarted.</span>
+                        </div>
+                    @endif
                 </div>
+            </div>
+
+            <div>
+                @if ($botRunning)
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                        wire:click="stopBot" wire:loading.attr="disabled">
+                        <i class="fa-solid fa-circle-pause me-1"></i>Stop bot
+                    </button>
+                @else
+                    <button type="button" class="btn btn-success btn-sm"
+                        wire:click="startBot" wire:loading.attr="disabled">
+                        <i class="fa-solid fa-circle-play me-1"></i>Start bot
+                    </button>
+                @endif
             </div>
 
             <div class="d-flex align-items-center gap-4 flex-grow-1 flex-wrap justify-content-md-end">
@@ -486,6 +506,18 @@
         });
     }
 
+    function priceLabel(n) {
+        if (n === null || n === undefined || isNaN(n)) return '';
+        const abs = Math.abs(n);
+        if (abs >= 100000) {
+            return '$' + (n / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 }) + 'k';
+        }
+        return '$' + Number(n).toLocaleString('en-US', {
+            minimumFractionDigits: abs < 100 ? 2 : 0,
+            maximumFractionDigits: abs < 100 ? 2 : 0,
+        });
+    }
+
     function summarize(candles) {
         if (!candles || !candles.length) return null;
         const open = candles[0].y[0];
@@ -568,6 +600,14 @@
                 { name: 'Trend', type: 'line', color: '#C8942A', data: line },
             ],
             xaxis: { type: 'datetime' },
+            yaxis: {
+                forceNiceScale: true,
+                labels: {
+                    formatter: priceLabel,
+                    style: { colors: chartIsDark() ? '#C9BFA3' : '#566a7f' },
+                },
+                opposite: false,
+            },
             plotOptions: { candlestick: { colors: { upward: '#71dd37', downward: '#ff5b5b' } } },
             stroke: { width: 2 },
             dataLabels: { enabled: false },
@@ -585,7 +625,7 @@
             chart: { foreColor: fg },
             grid: { borderColor: dark ? 'rgba(216,168,57,0.2)' : '#eceef1' },
             xaxis: { labels: { style: { colors: fg } } },
-            yaxis: { labels: { style: { colors: fg } } },
+            yaxis: { labels: { formatter: priceLabel, style: { colors: fg } } },
         }, false, false);
     }
 

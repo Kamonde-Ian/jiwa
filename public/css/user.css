@@ -512,6 +512,21 @@ a:hover {
 
 .deriv-chart-card .card-body, .deriv-trade-card .card-body { display: flex; flex-direction: column; }
 
+.market-loading { display: grid; place-items: center; height: 100%; min-height: 240px; color: var(--sneat-muted); font-size: .85rem; letter-spacing: .02em; }
+.market-status { font-size: .72rem; font-weight: 600; }
+.market-status.text-success { color: #2ba34a; }
+[data-theme='dark'] .market-status.text-success { color: #71dd37; }
+
+.results-table td, .results-table th { white-space: nowrap; }
+.results-table .text-end { text-align: right; }
+.today-live-row td { background: rgba(200, 148, 42, 0.07); font-weight: 600; }
+.today-live-row td:first-child { position: relative; }
+.today-live-row td:first-child::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, #F3D27A, #C8942A 60%, #986817);
+}
+[data-theme='dark'] .today-live-row td { background: rgba(216, 168, 57, 0.12); }
+
 /* ---------- Marketing: Bot Fund product section ---------- */
 .marketing-trade-card {
     background:

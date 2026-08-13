@@ -41,21 +41,15 @@
 
             <div class="d-flex align-items-center gap-4 flex-grow-1 flex-wrap justify-content-md-end">
                 <div class="ticker-block">
-                    <small class="text-muted d-block">{{ $pair }}</small>
+                    <small class="text-muted d-block" id="marketPairLabel">{{ $pair }}</small>
                     <div class="d-flex align-items-center gap-2">
-                        @if ($market['live'])
-                            <span class="ticker-price">${{ number_format($market['price'], 2) }}</span>
-                            <span class="ticker-change {{ $market['is_profit'] ? 'up' : 'down' }}">
-                                {{ $market['is_profit'] ? '+' : '' }}{{ number_format($market['change_pct'], 2) }}%
-                            </span>
-                        @else
-                            <span class="ticker-price">—</span>
-                        @endif
+                        <span class="ticker-price" id="marketPrice">—</span>
+                        <span class="ticker-change" id="marketChange"></span>
                     </div>
                 </div>
                 <div class="ticker-block">
-                    <small class="text-muted d-block">Open</small>
-                    <b>{{ $market['live'] ? '$'.number_format($market['open'], 2) : '—' }}</b>
+                    <small class="text-muted d-block">Open (window)</small>
+                    <b id="marketOpen">—</b>
                 </div>
                 <div class="ticker-block">
                     <small class="text-muted d-block">Bot trades today</small>
@@ -77,42 +71,44 @@
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 @foreach ($pairs as $p)
                                     <button type="button"
-                                        class="symbol-chip pair-chip {{ $p['symbol'] === $pair ? 'active' : '' }}"
                                         wire:click="setPair('{{ $p['symbol'] }}')"
+                                        data-market-pair="{{ $p['symbol'] }}"
+                                        class="symbol-chip pair-chip {{ $p['symbol'] === $pair ? 'active' : '' }}"
                                         title="Chart {{ $p['label'] }}">
                                         {{ $p['symbol'] }}
                                     </button>
                                 @endforeach
                                 <span class="symbol-chip text-muted">
-                                    <i class="fa-solid fa-database me-1"></i>Binance · {{ $timeframe }}
+                                    <i class="fa-solid fa-database me-1"></i>Binance
                                 </span>
                             </div>
                             <div class="range-switcher">
                                 @foreach ($timeframes as $tf)
                                     <button type="button"
-                                        class="{{ $tf === $timeframe ? 'active' : '' }}"
-                                        wire:click="setTimeframe('{{ $tf }}')">
+                                        wire:click="setTimeframe('{{ $tf }}')"
+                                        data-market-timeframe="{{ $tf }}"
+                                        class="{{ $tf === $timeframe ? 'active' : '' }}">
                                         {{ $tf }}
                                     </button>
                                 @endforeach
                             </div>
                         </div>
 
-                        @if (($chartConfig['series'][0]['data'] ?? null))
-                            <div data-chart='@json($chartConfig)' class="chart-fill deriv-chart" style="height: 360px;"></div>
-                        @else
-                            <div class="empty-state">
-                                <i class="fa-solid fa-chart-line"></i>
-                                <p class="mb-0">Live market data is unavailable right now. The chart will appear once Binance is reachable.</p>
-                            </div>
-                        @endif
+                        <div id="tradeMarketPanel"
+                            data-pair="{{ $pair }}"
+                            data-timeframe="{{ $timeframe }}"
+                            class="chart-fill deriv-chart"
+                            style="height: 360px;">
+                            <div class="market-loading">Loading live candles…</div>
+                        </div>
 
                         <div class="ohlc-strip border-top mt-2 pt-2">
-                            <span>O <b>{{ $market['live'] ? '$'.number_format($market['open'], 2) : '—' }}</b></span>
-                            <span>H <b class="text-success">{{ $market['live'] ? '$'.number_format($market['high'], 2) : '—' }}</b></span>
-                            <span>L <b class="text-danger">{{ $market['live'] ? '$'.number_format($market['low'], 2) : '—' }}</b></span>
-                            <span>C <b>{{ $market['live'] ? '$'.number_format($market['price'], 2) : '—' }}</b></span>
-                            <span class="text-muted">NAV = ${{ number_format($nav, 2) }} · {{ $today['live'] ? 'settling at 00:20 UTC' : 'settled' }}</span>
+                            <span>O <b id="market-ohlc-open">—</b></span>
+                            <span>H <b id="market-ohlc-high" class="text-success">—</b></span>
+                            <span>L <b id="market-ohlc-low" class="text-danger">—</b></span>
+                            <span>C <b id="market-ohlc-price">—</b></span>
+                            <span class="text-muted">NAV = ${{ number_format($nav, 2) }}</span>
+                            <span class="market-status text-muted" id="marketSourceStatus">Connecting to Binance…</span>
                         </div>
                     </div>
                 </div>
@@ -281,17 +277,19 @@
                 <div class="card h-100">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fa-regular fa-calendar me-2 text-primary"></i>Daily Bot Results</h5>
-                        <span class="text-muted small">Last {{ $sessions->count() }} sessions</span>
+                        <span class="text-muted small">
+                            Last {{ $sessions->count() }} settled @if ($today['live']) · today LIVE @endif
+                        </span>
                     </div>
                     <div class="card-body p-0">
-                        @if ($sessions->isEmpty())
+                        @if ($sessions->isEmpty() && ! $today['live'])
                             <div class="empty-state">
                                 <i class="fa-solid fa-calendar-days"></i>
                                 <p class="mb-0">No bot sessions yet. Results will appear after the first daily cycle.</p>
                             </div>
                         @else
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
+                                <table class="table table-hover align-middle mb-0 results-table">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
@@ -303,6 +301,24 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @if ($today['live'])
+                                            <tr class="today-live-row">
+                                                <td>
+                                                    <b>Today</b>
+                                                    <span class="live-pill live ms-1"><span class="pulse-dot"></span>LIVE</span>
+                                                    <small class="d-block text-muted">settles daily at 00:20 UTC</small>
+                                                </td>
+                                                <td class="text-end">${{ number_format($today['open'], 2) }}</td>
+                                                <td class="text-end">${{ number_format($today['price'], 2) }}</td>
+                                                <td class="text-end">
+                                                    <span class="badge {{ $today['is_profit'] ? 'badge-soft-success' : 'badge-soft-danger' }}">
+                                                        {{ $today['is_profit'] ? '+' : '' }}{{ number_format($today['change_pct'], 2) }}%
+                                                    </span>
+                                                </td>
+                                                <td class="text-end text-muted">{{ $today['trades'] }}</td>
+                                                <td class="text-end text-muted">pending</td>
+                                            </tr>
+                                        @endif
                                         @foreach ($sessions as $session)
                                             <tr>
                                                 <td class="text-muted">{{ $session->session_date->format('M j, Y') }}</td>
@@ -391,3 +407,301 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+(function () {
+    if (!window.ApexCharts) return;
+
+    const SYMBOLS = { 'BTC/USDT': 'BTCUSDT', 'ETH/USDT': 'ETHUSDT', 'BNB/USDT': 'BNBUSDT' };
+    const HOSTS = [
+        'https://api.binance.com',
+        'https://data-api.binance.vision',
+        'https://api1.binance.com',
+        'https://api2.binance.com',
+    ];
+    const LIMIT = 250;
+    const cache = new Map();
+
+    let panel = document.getElementById('tradeMarketPanel');
+    if (!panel) return;
+
+    let state = { pair: panel.dataset.pair || 'BTC/USDT', tf: panel.dataset.timeframe || '5m' };
+    let chart = null;
+
+    function symbolFor(pair) {
+        return SYMBOLS[pair] || pair.replace('/', '').toUpperCase();
+    }
+
+    async function fetchKlines(pair, tf, limit) {
+        const key = pair + '|' + tf;
+        if (cache.has(key)) return cache.get(key);
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 9000);
+
+        for (const host of HOSTS) {
+            const url = host + '/api/v3/klines?symbol=' + encodeURIComponent(symbolFor(pair))
+                + '&interval=' + encodeURIComponent(tf) + '&limit=' + limit;
+            try {
+                const res = await fetch(url, { signal: controller.signal, mode: 'cors' });
+                if (!res.ok) continue;
+                const rows = await res.json();
+                if (!Array.isArray(rows) || rows.length === 0) continue;
+
+                const candles = rows.map(function (r) {
+                    return { x: r[0], y: [parseFloat(r[1]), parseFloat(r[2]), parseFloat(r[3]), parseFloat(r[4]), parseFloat(r[5])] };
+                });
+
+                cache.set(key, candles);
+                clearTimeout(timer);
+                return candles;
+            } catch (e) { /* try next host */ }
+        }
+
+        clearTimeout(timer);
+        return null;
+    }
+
+    function fmt(n, d) {
+        if (n === null || n === undefined || isNaN(n)) return '—';
+        return Number(n).toLocaleString('en-US', {
+            minimumFractionDigits: d || 2,
+            maximumFractionDigits: d || 2,
+        });
+    }
+
+    function summarize(candles) {
+        if (!candles || !candles.length) return null;
+        const open = candles[0].y[0];
+        let high = candles[0].y[1];
+        let low = candles[0].y[2];
+        const close = candles[candles.length - 1].y[3];
+
+        candles.forEach(function (c) {
+            if (c.y[1] > high) high = c.y[1];
+            if (c.y[2] < low) low = c.y[2];
+        });
+
+        const change = open > 0 ? ((close - open) / open) * 100 : 0;
+
+        return { price: close, open: open, high: high, low: low, change_pct: change, is_profit: change >= 0 };
+    }
+
+    function swingSeries(candles) {
+        const pts = candles.map(function (c) { return { x: c.x, h: c.y[1], l: c.y[2], close: c.y[3] }; });
+        const n = pts.length;
+        if (n === 0) return [];
+        if (n < 3) return pts.map(function (p) { return { x: p.x, y: p.close }; });
+
+        const span = Math.max.apply(null, pts.map(function (p) { return p.h; }))
+            - Math.min.apply(null, pts.map(function (p) { return p.l; }));
+        const minMove = Math.max(span * 0.02, 0.01);
+        const trendsUp = pts[n - 1].close >= pts[0].close;
+
+        const swings = [];
+        let pivot = pts[0];
+        let lookingForHigh = trendsUp;
+
+        for (let i = 1; i < n; i++) {
+            const p = pts[i];
+            if (lookingForHigh) {
+                if (p.h > pivot.h) { pivot = p; continue; }
+                if (pivot.h - p.l >= minMove) {
+                    swings.push({ x: pivot.x, y: pivot.h });
+                    pivot = p;
+                    lookingForHigh = false;
+                }
+                continue;
+            }
+            if (p.l < pivot.l) { pivot = p; continue; }
+            if (p.h - pivot.l >= minMove) {
+                swings.push({ x: pivot.x, y: pivot.l });
+                pivot = p;
+                lookingForHigh = true;
+            }
+        }
+
+        swings.push({ x: pivot.x, y: lookingForHigh ? pivot.h : pivot.l });
+
+        const line = [];
+        if (swings[0].x === pts[0].x) {
+            line.push({ x: swings[0].x, y: +swings[0].y.toFixed(2) });
+        } else {
+            line.push({ x: pts[0].x, y: +pts[0].close.toFixed(2) });
+        }
+        swings.forEach(function (s) {
+            if (line[line.length - 1].x !== s.x) line.push({ x: s.x, y: +s.y.toFixed(2) });
+        });
+        if (line[line.length - 1].x !== pts[n - 1].x) {
+            line.push({ x: pts[n - 1].x, y: +pts[n - 1].close.toFixed(2) });
+        }
+        return line;
+    }
+
+    function chartIsDark() {
+        return document.documentElement.getAttribute('data-theme') === 'dark'
+            || document.documentElement.classList.contains('dark');
+    }
+
+    function buildConfig(candles, pair, tf) {
+        const line = swingSeries(candles);
+        return {
+            chart: { type: 'candlestick', toolbar: { show: false }, height: Math.max(260, panel.clientHeight || 360) },
+            series: [
+                { name: pair, type: 'candlestick', data: candles },
+                { name: 'Trend', type: 'line', color: '#C8942A', data: line },
+            ],
+            xaxis: { type: 'datetime' },
+            plotOptions: { candlestick: { colors: { upward: '#71dd37', downward: '#ff5b5b' } } },
+            stroke: { width: 2 },
+            dataLabels: { enabled: false },
+            tooltip: { shared: false },
+            legend: { show: false },
+            grid: { borderColor: 'rgba(216,168,57,0.15)' },
+        };
+    }
+
+    function applyTheme() {
+        if (!chart) return;
+        const dark = chartIsDark();
+        const fg = dark ? '#C9BFA3' : '#566a7f';
+        chart.updateOptions({
+            chart: { foreColor: fg },
+            grid: { borderColor: dark ? 'rgba(216,168,57,0.2)' : '#eceef1' },
+            xaxis: { labels: { style: { colors: fg } } },
+            yaxis: { labels: { style: { colors: fg } } },
+        }, false, false);
+    }
+
+    function setStatus(msg, ok) {
+        const el = document.getElementById('marketSourceStatus');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.toggle('text-success', !!ok);
+        el.classList.toggle('text-danger', !ok && ok !== undefined);
+    }
+
+    function updateUI(pair, candles) {
+        const tick = summarize(candles);
+        const label = document.getElementById('marketPairLabel');
+        const priceEl = document.getElementById('marketPrice');
+        const openEl = document.getElementById('marketOpen');
+        const changeEl = document.getElementById('marketChange');
+        const ids = ['market-ohlc-open', 'market-ohlc-high', 'market-ohlc-low', 'market-ohlc-price'];
+
+        if (label) label.textContent = pair;
+        openEl.textContent = tick ? '$' + fmt(tick.open) : '—';
+
+        if (!tick) {
+            priceEl.textContent = '—';
+            changeEl.textContent = '';
+            ids.forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '—';
+            });
+            setStatus('Market data unavailable', false);
+            return;
+        }
+
+        priceEl.textContent = '$' + fmt(tick.price);
+        changeEl.textContent = (tick.is_profit ? '+' : '') + fmt(Math.abs(tick.change_pct)) + '%';
+        changeEl.className = 'ticker-change ' + (tick.is_profit ? 'up' : 'down');
+
+        document.getElementById('market-ohlc-open').textContent = '$' + fmt(tick.open);
+        document.getElementById('market-ohlc-high').textContent = '$' + fmt(tick.high);
+        document.getElementById('market-ohlc-low').textContent = '$' + fmt(tick.low);
+        document.getElementById('market-ohlc-price').textContent = '$' + fmt(tick.price);
+
+        setStatus('Live · Binance', true);
+    }
+
+    function setActive(pair, tf) {
+        document.querySelectorAll('.pair-chip').forEach(function (b) {
+            b.classList.toggle('active', b.dataset.marketPair === pair);
+        });
+        document.querySelectorAll('.range-switcher button').forEach(function (b) {
+            b.classList.toggle('active', b.dataset.marketTimeframe === tf);
+        });
+    }
+
+    async function renderChart(force) {
+        if (!force && state.pair === panel.dataset.pair && state.tf === panel.dataset.timeframe && chart) return;
+
+        state = { pair: panel.dataset.pair || 'BTC/USDT', tf: panel.dataset.timeframe || '5m' };
+        setActive(state.pair, state.tf);
+
+        if (chart) {
+            chart.destroy();
+            chart = null;
+        }
+        panel.innerHTML = '<div class="market-loading">Loading live candles…</div>';
+
+        const candles = await fetchKlines(state.pair, state.tf, LIMIT);
+
+        if (state.pair !== panel.dataset.pair || state.tf !== panel.dataset.timeframe) return;
+
+        if (!candles) {
+            updateUI(state.pair, null);
+            panel.innerHTML = '<div class="empty-state"><i class="fa-solid fa-chart-line"></i><p class="mb-0">Live market data is unavailable right now.</p></div>';
+            return;
+        }
+
+        updateUI(state.pair, candles);
+        chart = new ApexCharts(panel, buildConfig(candles, state.pair, state.tf));
+        chart.render();
+        applyTheme();
+    }
+
+    function reconcile() {
+        const el = document.getElementById('tradeMarketPanel');
+        if (!el) return;
+        if (panel !== el) {
+            if (chart) { chart.destroy(); chart = null; }
+            panel = el;
+        }
+        setActive(el.dataset.pair || 'BTC/USDT', el.dataset.timeframe || '5m');
+        renderChart(false);
+    }
+
+    document.addEventListener('click', function (e) {
+        const pairBtn = e.target.closest('.pair-chip');
+        if (pairBtn) {
+            const pair = pairBtn.dataset.marketPair;
+            if (pair && pair !== panel.dataset.pair) {
+                panel.dataset.pair = pair;
+                renderChart(true);
+            }
+            return;
+        }
+        const tfBtn = e.target.closest('.range-switcher button');
+        if (tfBtn) {
+            const tf = tfBtn.dataset.marketTimeframe;
+            if (tf && tf !== panel.dataset.timeframe) {
+                panel.dataset.timeframe = tf;
+                renderChart(true);
+            }
+        }
+    });
+
+    window.addEventListener('theme-changed', applyTheme);
+    window.addEventListener('resize', function () {
+        if (!chart) return;
+        chart.updateOptions({ chart: { height: Math.max(260, panel.clientHeight || 360) } }, false, false);
+    });
+
+    function registerHooks() {
+        if (window.Livewire && !window.__tradeHooksRegistered) {
+            window.__tradeHooksRegistered = true;
+            window.Livewire.hook('morph.updated', reconcile);
+        }
+    }
+
+    registerHooks();
+    document.addEventListener('livewire:init', registerHooks);
+    document.addEventListener('livewire:navigated', registerHooks);
+
+    renderChart(false);
+})();
+</script>
+@endpush

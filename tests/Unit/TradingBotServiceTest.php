@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Domain\Trading\MarketDataClient;
 use App\Domain\Trading\TradingBotService;
 use App\Domain\Wallets\WalletService;
 use App\Models\PoolAllocation;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Fakes\FakeMarketDataClient;
 use Tests\TestCase;
 
 class TradingBotServiceTest extends TestCase
@@ -21,9 +23,15 @@ class TradingBotServiceTest extends TestCase
 
     protected WalletService $wallets;
 
+    protected FakeMarketDataClient $marketData;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->marketData = new FakeMarketDataClient;
+        $this->app->instance(MarketDataClient::class, $this->marketData);
+
         $this->service = app(TradingBotService::class);
         $this->wallets = app(WalletService::class);
     }
@@ -39,17 +47,49 @@ class TradingBotServiceTest extends TestCase
         $this->assertTrue($pool->is_active);
     }
 
-    public function test_day_path_is_deterministic(): void
+    public function test_session_path_is_deterministic_from_live_market_data(): void
     {
         $pool = $this->service->pool();
         $date = CarbonImmutable::parse('2026-08-12');
+        $this->marketData->seedDay('2026-08-12', 'rise', 40000, 3.0);
 
-        $a = $this->service->dayPath($pool, $date);
-        $b = $this->service->dayPath($pool, $date);
+        $a = $this->service->sessionPath($pool, $date);
+        $b = $this->service->sessionPath($pool, $date);
 
         $this->assertSame($a, $b);
         $this->assertGreaterThanOrEqual($a['low'], $a['high']);
-        $this->assertSame(['open', 'high', 'low', 'close', 'return_pct', 'is_profit', 'pnl', 'trade_count', 'strategy'], array_keys($a));
+        $this->assertGreaterThan(0, $a['return_pct']);
+        $this->assertTrue($a['is_profit']);
+        $this->assertSame(
+            ['open', 'high', 'low', 'close', 'return_pct', 'is_profit', 'pnl', 'trade_count', 'strategy'],
+            array_keys($a)
+        );
+    }
+
+    public function test_session_path_books_losses_on_falling_market_days(): void
+    {
+        $pool = $this->service->pool();
+        $date = CarbonImmutable::parse('2026-08-11');
+        $this->marketData->seedDay('2026-08-11', 'fall', 40000, 3.0);
+
+        $path = $this->service->sessionPath($pool, $date);
+
+        $this->assertLessThan(0, $path['return_pct']);
+        $this->assertFalse($path['is_profit']);
+        $this->assertLessThan((float) $pool->nav, $path['close']);
+    }
+
+    public function test_session_path_is_flat_when_market_data_is_unavailable(): void
+    {
+        $pool = $this->service->pool();
+        $date = CarbonImmutable::parse('2026-08-10');
+        $this->marketData->clearDay('2026-08-10');
+
+        $path = $this->service->sessionPath($pool, $date);
+
+        $this->assertSame(0.0, $path['return_pct']);
+        $this->assertEquals(100, $path['close']);
+        $this->assertSame(0, $path['trade_count']);
     }
 
     public function test_allocate_moves_funds_and_buys_units(): void
@@ -95,7 +135,7 @@ class TradingBotServiceTest extends TestCase
         $this->assertSame(PoolAllocation::STATUS_CLOSED, $allocation->fresh()->status);
     }
 
-    public function test_daily_cycle_is_idempotent_and_moves_nav(): void
+    public function test_daily_cycle_is_idempotent_and_moves_nav_on_real_data(): void
     {
         $user = User::factory()->create();
         $this->wallets->credit($this->wallets->getOrCreate($user, Wallet::TYPE_PRINCIPAL), 1000, 'Funding');
@@ -103,10 +143,12 @@ class TradingBotServiceTest extends TestCase
         $this->service->allocate($user, $pool, 1000);
 
         $day = CarbonImmutable::today()->subDays(3);
+        $this->marketData->seedDay($day->toDateString(), 'rise', 50000, 2.0);
 
         $first = $this->service->runDailyCycle($day);
         $navAfter = (float) $pool->fresh()->nav;
         $this->assertSame(1, $first['settled']);
+        $this->assertGreaterThan(100, $navAfter, 'A rising market day should push the NAV up.');
 
         $second = $this->service->runDailyCycle($day);
         $this->assertSame(0, $second['settled']);
@@ -122,23 +164,11 @@ class TradingBotServiceTest extends TestCase
         $pool = $this->service->pool();
         $allocation = $this->service->allocate($user, $pool, 1000);
 
-        // Find deterministic profit and loss days within a window.
-        $profitDay = $lossDay = null;
+        $lossDay = CarbonImmutable::today()->subDays(2);
+        $profitDay = CarbonImmutable::today()->subDays(1);
 
-        for ($offset = 40; $offset >= 1; $offset--) {
-            $date = CarbonImmutable::today()->subDays($offset);
-            $path = $this->service->dayPath($pool, $date);
-
-            if ($path['is_profit'] && $profitDay === null) {
-                $profitDay = $date;
-            }
-            if (! $path['is_profit'] && $lossDay === null) {
-                $lossDay = $date;
-            }
-        }
-
-        $this->assertNotNull($profitDay, 'Expected at least one deterministic profit day in window');
-        $this->assertNotNull($lossDay, 'Expected at least one deterministic loss day in window');
+        $this->marketData->seedDay($lossDay->toDateString(), 'fall', 50000, 2.0);
+        $this->marketData->seedDay($profitDay->toDateString(), 'rise', 50000, 2.0);
 
         // Loss day first: no payout, position value shrinks.
         $this->service->runDailyCycle($lossDay);
@@ -177,6 +207,8 @@ class TradingBotServiceTest extends TestCase
 
         for ($offset = 30; $offset >= 1; $offset--) {
             $date = CarbonImmutable::today()->subDays($offset);
+            $this->marketData->seedDay($date->toDateString(), ($offset % 3 === 0) ? 'fall' : 'rise', 50000, 2.0);
+
             $result = $this->service->runDailyCycle($date);
             $this->assertSame(1, $result['settled']);
             $expected += $result['paid'];
@@ -189,6 +221,6 @@ class TradingBotServiceTest extends TestCase
             ->count();
 
         $this->assertSame($expected, $payouts);
-        $this->assertGreaterThan(0, $payouts, 'The 30-day window should contain at least one profit day.');
+        $this->assertGreaterThan(0, $payouts, 'Rising seeded days should produce payouts.');
     }
 }

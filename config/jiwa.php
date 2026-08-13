@@ -144,9 +144,10 @@ return [
     'password_min_length' => env('JIWA_PASSWORD_MIN_LENGTH', 10),
 
     /*
-     * Custodial trading product ("JIWA Bot Fund"). A simulated strategy engine
-     * trades the users' pooled deposits; the pool's daily P&L is what produces
-     * the daily investment returns credited to each participant.
+     * Custodial trading product ("JIWA Bot Fund"). The pool's daily P&L is
+     * produced by a real-data strategy that trades live candles (via Binance)
+     * on the major currency pairs below; the daily result is what produces the
+     * investment returns credited to each participant.
      */
     'trading_enabled' => env('JIWA_TRADING_ENABLED', true),
 
@@ -170,12 +171,27 @@ return [
     'trading_max_allocate' => env('JIWA_TRADING_MAX_ALLOCATE', null),
 
     /*
-     * Strategy parameters shaping the deterministic daily return: an average
-     * gain per day (percent), per-day volatility, and the probability any
-     * given day lands in the red. Results are seeded from the session date so
-     * they are stable and reproducible.
+     * The major currency pairs the platform charts and trades, and the
+     * timeframes available on the chart. 5 minutes is the lowest timeframe.
      */
-    'trading_avg_daily_return_pct' => (float) env('JIWA_TRADING_AVG_DAILY_RETURN_PCT', 0.35),
-    'trading_daily_volatility_pct' => (float) env('JIWA_TRADING_DAILY_VOLATILITY_PCT', 0.75),
-    'trading_loss_probability' => (float) env('JIWA_TRADING_LOSS_PROBABILITY', 0.3),
+    'trading_pairs' => [
+        ['symbol' => 'BTC/USDT', 'base' => 'BTC', 'quote' => 'USDT', 'label' => 'BTC / USDT'],
+        ['symbol' => 'ETH/USDT', 'base' => 'ETH', 'quote' => 'USDT', 'label' => 'ETH / USDT'],
+        ['symbol' => 'BNB/USDT', 'base' => 'BNB', 'quote' => 'USDT', 'label' => 'BNB / USDT'],
+    ],
+    'trading_timeframes' => ['5m', '15m', '30m', '1h', '4h', '1d'],
+
+    /*
+     * Default pair and timeframe the Trade page opens on.
+     */
+    'trading_default_pair' => env('JIWA_TRADING_DEFAULT_PAIR', 'BTC/USDT'),
+    'trading_default_timeframe' => env('JIWA_TRADING_DEFAULT_TIMEFRAME', '5m'),
+
+    /*
+     * Pair + timeframe the pool bot actually "trades" on real data, and the
+     * share of the raw market move the strategy books as the pool's result.
+     */
+    'trading_strategy_pair' => env('JIWA_TRADING_STRATEGY_PAIR', 'BTC/USDT'),
+    'trading_strategy_timeframe' => env('JIWA_TRADING_STRATEGY_TIMEFRAME', '5m'),
+    'trading_participation_pct' => (float) env('JIWA_TRADING_PARTICIPATION_PCT', 0.5),
 ];

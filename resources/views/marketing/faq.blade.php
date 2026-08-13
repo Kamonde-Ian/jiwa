@@ -3,6 +3,12 @@
 @section('title', 'FAQ — '.config('app.name'))
 
 @section('content')
+    @php
+        $planRates = \App\Models\InvestmentPlan::where('is_active', true)->orderBy('daily_rate')->pluck('daily_rate');
+        $ratesMin = $planRates->first() ?? config('jiwa.default_daily_rate');
+        $ratesMax = $planRates->last() ?? config('jiwa.default_daily_rate');
+    @endphp
+
     <section class="hero-section py-5">
         <div class="container hero-inner">
             <div class="row align-items-center g-5">
@@ -25,7 +31,7 @@
                                 <div class="my-3">
                                     <div class="d-flex align-items-center gap-2 mb-3">
                                         <div class="icon-badge"><i class="fa-solid fa-arrow-trend-up"></i></div>
-                                        <div class="small"><div class="fw-semibold text-body">{{ number_format((float) config('jiwa.default_daily_rate') * 100, 1) }}% daily</div><span class="text-muted">credited every 24h</span></div>
+                                        <div class="small"><div class="fw-semibold text-body">{{ number_format((float) $ratesMin * 100, 2) }}% – {{ number_format((float) $ratesMax * 100, 2) }}% daily</div><span class="text-muted">credited every 24h</span></div>
                                     </div>
                                     <div class="d-flex align-items-center gap-2 mb-3">
                                         <div class="icon-badge"><i class="fa-solid fa-vault"></i></div>
@@ -45,12 +51,12 @@
     </section>
 
     <section class="py-5">
-        <div class="container" style="max-width:44rem">
+        <div class="container">
             <div class="accordion" id="faqAccordion">
                 @php
                     $faqs = [
                         ['q' => 'How do I start investing?', 'a' => 'Create a free account, fund your principal wallet with BTC, ETH, BNB, or USDT, then select an investment plan. Interest is credited to your account every 24 hours.'],
-                        ['q' => 'What is the daily interest rate?', 'a' => 'Plans earn fixed daily rates between 0.10% and 0.20% depending on the plan you choose, credited automatically to your earnings wallet every 24 hours. Rates are admin-configurable.'],
+                        ['q' => 'What is the daily interest rate?', 'a' => 'Plans earn fixed daily rates between '.number_format((float) $ratesMin * 100, 2).'% and '.number_format((float) $ratesMax * 100, 2).'% depending on the plan you choose, credited automatically to your earnings wallet every 24 hours. Rates are admin-configurable.'],
                         ['q' => 'How are returns calculated?', 'a' => 'Interest is computed daily on the amount invested at your plan\'s rate and credited to your earnings wallet. Your principal stays locked until the plan matures, while earnings can be withdrawn anytime.'],
                         ['q' => 'What happens when my plan matures?', 'a' => 'At maturity your invested principal is released back to your principal wallet, and all earned interest remains in your earnings wallet — ready to reinvest or withdraw.'],
                         ['q' => 'What are the minimums and durations?', 'a' => 'The minimum investment is $100 on the Starter plan, rising to $500, $1,500, $5,000, and $10,000 across the Growth, Advantage, Pro, and Elite plans. Durations run 30, 90, 180, 365, and 730 days.'],

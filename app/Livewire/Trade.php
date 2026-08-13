@@ -2,10 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Domain\Trading\MarketDataClient;
 use App\Domain\Trading\TradingBotService;
 use App\Domain\Wallets\WalletService;
 use App\Models\PoolAllocation;
 use App\Models\Wallet;
+use App\Support\PlatformSettings;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -20,13 +22,36 @@ class Trade extends Component
 
     public ?float $withdrawAmount = null;
 
+    public string $pair = 'BTC/USDT';
+
+    public string $timeframe = '5m';
+
     public function mount(TradingBotService $service): void
     {
-        if (! \App\Support\PlatformSettings::config('jiwa.trading_enabled')) {
+        if (! PlatformSettings::config('jiwa.trading_enabled')) {
             abort(404);
         }
 
         $service->pool();
+
+        $this->pair = (string) PlatformSettings::config('jiwa.trading_default_pair');
+        $this->timeframe = (string) PlatformSettings::config('jiwa.trading_default_timeframe');
+    }
+
+    public function setPair(string $pair): void
+    {
+        $symbols = collect(PlatformSettings::config('jiwa.trading_pairs'))->pluck('symbol')->all();
+
+        if (in_array($pair, $symbols, true)) {
+            $this->pair = $pair;
+        }
+    }
+
+    public function setTimeframe(string $timeframe): void
+    {
+        if (in_array($timeframe, PlatformSettings::config('jiwa.trading_timeframes'), true)) {
+            $this->timeframe = $timeframe;
+        }
     }
 
     public function setPanel(string $panel): void
@@ -94,11 +119,26 @@ class Trade extends Component
         $this->reset('withdrawAmount');
     }
 
-    public function render(TradingBotService $service, WalletService $walletService)
+    public function render(TradingBotService $service, WalletService $walletService, MarketDataClient $marketData)
     {
         $user = auth()->user();
         $pool = $service->pool();
         $nav = (float) $pool->nav;
+
+        $pairs = collect(PlatformSettings::config('jiwa.trading_pairs'))
+            ->map(fn (array $p) => [
+                'symbol' => $p['symbol'],
+                'label' => $p['label'] ?? $p['symbol'],
+                'base' => $p['base'] ?? '',
+                'quote' => $p['quote'] ?? '',
+            ])
+            ->values()
+            ->all();
+
+        $timeframes = PlatformSettings::config('jiwa.trading_timeframes') ?: [];
+
+        $candles = $marketData->candles($this->pair, $this->timeframe, 250);
+        $market = MarketDataClient::summarize($candles);
 
         $allocations = $user->poolAllocations()
             ->where('status', PoolAllocation::STATUS_ACTIVE)
@@ -157,6 +197,11 @@ class Trade extends Component
         return view('livewire.trade', [
             'pool' => $pool,
             'nav' => $nav,
+            'pair' => $this->pair,
+            'timeframe' => $this->timeframe,
+            'pairs' => $pairs,
+            'timeframes' => $timeframes,
+            'market' => $market,
             'allocation' => $allocations->first(),
             'positionValue' => $positionValue,
             'units' => $units,
@@ -172,7 +217,7 @@ class Trade extends Component
             'todayPnl' => $todayPnl,
             'sessions' => $sessions,
             'dailyPayouts' => $dailyPayouts,
-            'chartConfig' => $service->chartConfig($pool),
+            'chartConfig' => $service->chartConfig($marketData, $this->pair, $this->timeframe, 250),
         ]);
     }
 }

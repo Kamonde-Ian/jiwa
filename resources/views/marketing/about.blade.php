@@ -3,6 +3,13 @@
 @section('title', 'About — '.config('app.name'))
 
 @section('content')
+    @php
+        $planRates = \App\Models\InvestmentPlan::where('is_active', true)->orderBy('daily_rate')->pluck('daily_rate');
+        $ratesMin = $planRates->first() ?? config('jiwa.default_daily_rate');
+        $ratesMax = $planRates->last() ?? config('jiwa.default_daily_rate');
+        $supportedCoins = \Illuminate\Support\Collection::make(config('jiwa.networks'))->pluck('currency')->unique()->count();
+    @endphp
+
     <section class="hero-section py-5">
         <div class="container hero-inner">
             <div class="row align-items-center g-5">
@@ -29,7 +36,7 @@
                                     </div>
                                     <div class="d-flex align-items-center gap-2 mb-3">
                                         <div class="icon-badge"><i class="fa-solid fa-coins"></i></div>
-                                        <div class="small"><div class="fw-semibold text-body">{{ number_format((float) config('jiwa.default_daily_rate') * 100, 1) }}% daily</div><span class="text-muted">interest credited every 24h</span></div>
+                                        <div class="small"><div class="fw-semibold text-body">{{ number_format((float) $ratesMin * 100, 2) }}% – {{ number_format((float) $ratesMax * 100, 2) }}% daily</div><span class="text-muted">interest credited every 24h</span></div>
                                     </div>
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="icon-badge"><i class="fa-solid fa-eye"></i></div>
@@ -51,7 +58,7 @@
                     <span class="eyebrow mb-3"><i class="fa-solid fa-compass me-1"></i> Our mission</span>
                     <h2 class="section-title mt-2 mb-3">{{ config('app.name') }} lets you <strong>deposit, invest, and earn</strong></h2>
                     <p class="text-muted mb-3">{{ config('app.name') }} lets you deposit cryptocurrency, invest it for a
-                        fixed period, and earn {{ number_format((float) config('jiwa.default_daily_rate') * 100, 1) }}%
+                        fixed period, and earn between {{ number_format((float) $ratesMin * 100, 2) }}% and {{ number_format((float) $ratesMax * 100, 2) }}%
                         daily interest. Interest is credited automatically to your earnings wallet every 24 hours and can be
                         withdrawn at any time, while your principal stays locked until maturity.</p>
                     <p class="text-muted mb-0">Our mission is simple: make compound, institutional-quality returns available
@@ -93,7 +100,7 @@
                         <div class="small fw-semibold text-white mb-3">Our promise at a glance</div>
                         <div class="d-flex justify-content-between align-items-center py-2 border-top border-light small">
                             <span class="text-white-50">Daily interest</span>
-                            <span class="fw-semibold text-white fs-5">{{ number_format((float) config('jiwa.default_daily_rate') * 100, 1) }}%</span>
+                            <span class="fw-semibold text-white fs-5">{{ number_format((float) $ratesMin * 100, 2) }}% – {{ number_format((float) $ratesMax * 100, 2) }}%</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center py-2 border-top border-light small">
                             <span class="text-white-50">Interest credit cycle</span>
@@ -124,7 +131,7 @@
             <div class="row g-4">
                 @php
                     $points = [
-                        ['i' => 'fa-arrow-trend-up', 't' => '0.5% daily interest', 'd' => 'Interest is credited every 24 hours directly to your earnings wallet.'],
+                        ['i' => 'fa-arrow-trend-up', 't' => number_format((float) $ratesMin * 100, 2).'% – '.number_format((float) $ratesMax * 100, 2).'% daily interest', 'd' => 'Your plan\'s daily rate is credited to your earnings wallet every 24 hours.'],
                         ['i' => 'fa-lock', 't' => 'Principal locked until maturity', 'd' => 'Your invested capital is safe and locked for the full plan duration.'],
                         ['i' => 'fa-sack-dollar', 't' => 'Earnings are always withdrawable', 'd' => 'Daily interest and referral income can be withdrawn any time.'],
                         ['i' => 'fa-layer-group', 't' => 'Invest in multiple plans', 'd' => 'Hold several active investments across different plans at once.'],
@@ -160,7 +167,7 @@
                     <div class="small">Total invested</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-value">6</div>
+                    <div class="stat-value">{{ $supportedCoins }}</div>
                     <div class="small">Supported coins</div>
                 </div>
                 <div class="col-6 col-md-3">

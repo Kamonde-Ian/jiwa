@@ -109,7 +109,7 @@ new #[Layout('layouts.guest', ['title' => 'Register', 'brand' => 'Create your ac
                 <x-auth.field for="password" :label="__('Password')" type="password" model="password" placeholder="••••••••" autocomplete="new-password" :required="true" :autofocus="true" />
                 <x-auth.field for="password_confirmation" :label="__('Confirm Password')" type="password" model="password_confirmation" placeholder="••••••••" autocomplete="new-password" :required="true" />
             @else
-                <x-auth.field for="ref" :label="__('Referral Code (optional)')" model="ref" placeholder="JIWA0000" autocomplete="off" uppercase="true" :autofocus="true" />
+                <x-auth.field for="ref" :label="__('Referral Code (optional)')" model="ref" placeholder="A1B2C3D4" autocomplete="off" uppercase="true" :autofocus="true" />
             @endif
         </div>
 

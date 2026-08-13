@@ -2,23 +2,30 @@
 
 namespace Tests\Feature;
 
+use App\Domain\Trading\MarketDataClient;
 use App\Domain\Trading\TradingBotService;
 use App\Domain\Wallets\WalletService;
 use App\Livewire\Trade;
-use App\Models\TradingPool;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Tests\Fakes\FakeMarketDataClient;
 use Tests\TestCase;
 
 class TradePageTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected FakeMarketDataClient $marketData;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->marketData = new FakeMarketDataClient;
+        $this->app->instance(MarketDataClient::class, $this->marketData);
+
         $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }
@@ -39,6 +46,49 @@ class TradePageTest extends TestCase
         config()->set('jiwa.trading_enabled', false);
 
         $this->get(route('trade'))->assertNotFound();
+    }
+
+    public function test_trade_page_charts_live_market_data_with_pair_and_timeframe_selector(): void
+    {
+        app(TradingBotService::class)->pool();
+
+        $this->get(route('trade'))
+            ->assertOk()
+            ->assertSee('BTC/USDT')
+            ->assertSee('ETH/USDT')
+            ->assertSee('BNB/USDT')
+            ->assertSee('Binance')
+            ->assertSee('5m')
+            ->assertSee('15m')
+            ->assertSee('1h')
+            ->assertSee('1d')
+            ->assertDontSee('Synthetic');
+    }
+
+    public function test_user_can_switch_pair_and_timeframe_via_livewire(): void
+    {
+        app(TradingBotService::class)->pool();
+
+        Livewire::test(Trade::class)
+            ->assertSet('pair', 'BTC/USDT')
+            ->assertSet('timeframe', '5m')
+            ->call('setPair', 'ETH/USDT')
+            ->assertSet('pair', 'ETH/USDT')
+            ->call('setPair', 'BTC')
+            ->assertSet('pair', 'ETH/USDT')
+            ->call('setTimeframe', '1h')
+            ->assertSet('timeframe', '1h')
+            ->call('setTimeframe', '3m')
+            ->assertSet('timeframe', '1h');
+    }
+
+    public function test_chart_only_exposes_supported_pairs_with_5m_as_lowest_timeframe(): void
+    {
+        $pairs = collect(config('jiwa.trading_pairs'))->pluck('symbol')->all();
+        $this->assertSame(['BTC/USDT', 'ETH/USDT', 'BNB/USDT'], $pairs);
+
+        $timeframes = config('jiwa.trading_timeframes');
+        $this->assertSame('5m', $timeframes[0]);
     }
 
     public function test_user_can_allocate_via_livewire(): void

@@ -44,8 +44,8 @@
                     <div class="stat-value">$2.4M</div>
                     <div class="small">Total invested</div>
                 </div>
-                <div class="col-6 col-md-3 col-xl-3">
-                    <div class="stat-value">40+</div>
+<div class="col-6 col-md-3 col-xl-3">
+                    <div class="stat-value">{{ count(config('jiwa.countries')) }}+</div>
                     <div class="small">Countries served</div>
                 </div>
                 <div class="col-6 col-md-3 col-xl-3">
@@ -213,7 +213,7 @@
                 <div class="col-md-4">
                     <div class="icon-badge icon-badge-lg mb-3">2</div>
                     <h6 class="fw-semibold">Fund your wallet</h6>
-                    <p class="text-muted small">Deposit BTC, ETH, or USDT into your principal wallet.</p>
+                    <p class="text-muted small">Deposit BTC, ETH, BNB, or USDT into your principal wallet.</p>
                 </div>
                 <div class="col-md-4">
                     <div class="icon-badge icon-badge-lg mb-3">3</div>
@@ -378,7 +378,7 @@
     <section class="py-5 text-center text-white" style="background:linear-gradient(135deg,#E6B947,#C8942A 55%,#986817)">
         <div class="container py-3">
             <h2 class="text-white mb-3">Ready to start earning?</h2>
-            <p class="mb-4 text-white-50">Join hundreds of investors building long-term wealth with JIWA.</p>
+            <p class="mb-4 text-white-50">Join hundreds of investors building long-term wealth with {{ config('app.name') }}.</p>
             <a href="{{ route('register') }}" class="btn btn-light btn-lg px-4">Get Started Free</a>
         </div>
     </section>

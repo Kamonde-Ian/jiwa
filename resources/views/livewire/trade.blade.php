@@ -41,20 +41,24 @@
 
             <div class="d-flex align-items-center gap-4 flex-grow-1 flex-wrap justify-content-md-end">
                 <div class="ticker-block">
-                    <small class="text-muted d-block">Current</small>
+                    <small class="text-muted d-block">{{ $pair }}</small>
                     <div class="d-flex align-items-center gap-2">
-                        <span class="ticker-price">${{ number_format($today['price'], 2) }}</span>
-                        <span class="ticker-change {{ $today['is_profit'] ? 'up' : 'down' }}">
-                            {{ $today['is_profit'] ? '+' : '' }}{{ number_format($today['change_pct'], 2) }}%
-                        </span>
+                        @if ($market['live'])
+                            <span class="ticker-price">${{ number_format($market['price'], 2) }}</span>
+                            <span class="ticker-change {{ $market['is_profit'] ? 'up' : 'down' }}">
+                                {{ $market['is_profit'] ? '+' : '' }}{{ number_format($market['change_pct'], 2) }}%
+                            </span>
+                        @else
+                            <span class="ticker-price">—</span>
+                        @endif
                     </div>
                 </div>
                 <div class="ticker-block">
                     <small class="text-muted d-block">Open</small>
-                    <b>${{ number_format($today['open'], 2) }}</b>
+                    <b>{{ $market['live'] ? '$'.number_format($market['open'], 2) : '—' }}</b>
                 </div>
                 <div class="ticker-block">
-                    <small class="text-muted d-block">Across pool</small>
+                    <small class="text-muted d-block">Bot trades today</small>
                     <b>{{ number_format($today['trades']) }} trades</b>
                 </div>
                 <div class="ticker-block">
@@ -70,18 +74,27 @@
                 <div class="card h-100 deriv-chart-card">
                     <div class="card-body">
                         <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="symbol-chip">Synthetic</span>
-                                <span class="symbol-chip">30M</span>
-                                <span class="text-muted small">
-                                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i>{{ $today['strategy'] }}
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                @foreach ($pairs as $p)
+                                    <button type="button"
+                                        class="symbol-chip pair-chip {{ $p['symbol'] === $pair ? 'active' : '' }}"
+                                        wire:click="setPair('{{ $p['symbol'] }}')"
+                                        title="Chart {{ $p['label'] }}">
+                                        {{ $p['symbol'] }}
+                                    </button>
+                                @endforeach
+                                <span class="symbol-chip text-muted">
+                                    <i class="fa-solid fa-database me-1"></i>Binance · {{ $timeframe }}
                                 </span>
                             </div>
                             <div class="range-switcher">
-                                <button type="button" class="active">1D</button>
-                                <button type="button">1W</button>
-                                <button type="button">1M</button>
-                                <button type="button">3M</button>
+                                @foreach ($timeframes as $tf)
+                                    <button type="button"
+                                        class="{{ $tf === $timeframe ? 'active' : '' }}"
+                                        wire:click="setTimeframe('{{ $tf }}')">
+                                        {{ $tf }}
+                                    </button>
+                                @endforeach
                             </div>
                         </div>
 
@@ -90,15 +103,15 @@
                         @else
                             <div class="empty-state">
                                 <i class="fa-solid fa-chart-line"></i>
-                                <p class="mb-0">The bot fund chart will fill in as trading sessions settle.</p>
+                                <p class="mb-0">Live market data is unavailable right now. The chart will appear once Binance is reachable.</p>
                             </div>
                         @endif
 
                         <div class="ohlc-strip border-top mt-2 pt-2">
-                            <span>O <b>${{ number_format($today['open'], 2) }}</b></span>
-                            <span>H <b class="text-success">${{ number_format($today['high'], 2) }}</b></span>
-                            <span>L <b class="text-danger">${{ number_format($today['low'], 2) }}</b></span>
-                            <span>C <b>${{ number_format($today['price'], 2) }}</b></span>
+                            <span>O <b>{{ $market['live'] ? '$'.number_format($market['open'], 2) : '—' }}</b></span>
+                            <span>H <b class="text-success">{{ $market['live'] ? '$'.number_format($market['high'], 2) : '—' }}</b></span>
+                            <span>L <b class="text-danger">{{ $market['live'] ? '$'.number_format($market['low'], 2) : '—' }}</b></span>
+                            <span>C <b>{{ $market['live'] ? '$'.number_format($market['price'], 2) : '—' }}</b></span>
                             <span class="text-muted">NAV = ${{ number_format($nav, 2) }} · {{ $today['live'] ? 'settling at 00:20 UTC' : 'settled' }}</span>
                         </div>
                     </div>

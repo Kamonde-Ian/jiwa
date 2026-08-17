@@ -82,16 +82,15 @@
             </div>
         </div>
 
-        <div class="row g-4">
+        <div class="trade-grid trade-grid--top">
             {{-- ======= Chart ======= --}}
-            <div class="col-12 col-xl-8">
+            <div class="trade-grid__cell">
                 <div class="card h-100 deriv-chart-card">
                     <div class="card-body">
                         <div class="d-flex flex-wrap align-items-center justify-content-between mb-2 gap-2">
                             <div class="d-flex align-items-center flex-wrap gap-2">
                                 @foreach ($pairs as $p)
                                     <button type="button"
-                                        wire:click="setPair('{{ $p['symbol'] }}')"
                                         data-market-pair="{{ $p['symbol'] }}"
                                         class="symbol-chip pair-chip {{ $p['symbol'] === $pair ? 'active' : '' }}"
                                         title="Chart {{ $p['label'] }}">
@@ -105,7 +104,6 @@
                             <div class="range-switcher">
                                 @foreach ($timeframes as $tf)
                                     <button type="button"
-                                        wire:click="setTimeframe('{{ $tf }}')"
                                         data-market-timeframe="{{ $tf }}"
                                         class="{{ $tf === $timeframe ? 'active' : '' }}">
                                         {{ $tf }}
@@ -115,6 +113,7 @@
                         </div>
 
                         <div id="tradeMarketPanel"
+                            wire:ignore
                             data-pair="{{ $pair }}"
                             data-timeframe="{{ $timeframe }}"
                             data-proxy="{{ route('trade.market.klines') }}"
@@ -128,7 +127,7 @@
                             <span>H <b id="market-ohlc-high" class="text-success">—</b></span>
                             <span>L <b id="market-ohlc-low" class="text-danger">—</b></span>
                             <span>C <b id="market-ohlc-price">—</b></span>
-                            <span class="text-muted">NAV = ${{ number_format($nav, 2) }}</span>
+                            <span class="text-muted">NAV = ${{ number_format($nav, 2) }} <x-term-info term="NAV" /></span>
                             <span class="market-status text-muted" id="marketSourceStatus">Connecting to Binance…</span>
                         </div>
                     </div>
@@ -136,7 +135,7 @@
             </div>
 
             {{-- ======= Trade panel ======= --}}
-            <div class="col-12 col-xl-4">
+            <div class="trade-grid__cell">
                 <div class="card h-100 deriv-trade-card">
                     <div class="card-body d-flex flex-column">
                         <div class="trade-tabs mb-3">
@@ -164,19 +163,19 @@
 
                                 <div class="trade-facts mb-3">
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">Available principal</span>
-                                        <b>${{ number_format($principal, 2) }}</b>
+                                        <span class="text-muted small">Available principal <x-term-info term="Available principal" /></span>
+                                        <b>${{ number_format($principalAvailable, 2) }}</b>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">NAV per unit</span>
+                                        <span class="text-muted small">NAV per unit <x-term-info term="NAV" /></span>
                                         <b>${{ number_format($nav, 2) }}</b>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">Units you acquire</span>
+                                        <span class="text-muted small">Units you acquire <x-term-info term="Units" /></span>
                                         <b>{{ $allocateAmount ? number_format($allocateAmount / max($nav, 0.0001), 6) : '—' }}</b>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">Bot-managed daily return</span>
+                                        <span class="text-muted small">Bot-managed daily return <x-term-info term="Daily return" /></span>
                                         <b>{{ $today['is_profit'] ? '+' : '' }}{{ number_format($today['change_pct'], 2) }}%</b>
                                     </div>
                                 </div>
@@ -212,11 +211,11 @@
 
                                 <div class="trade-facts mb-3">
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">Current fund value</span>
+                                        <span class="text-muted small">Current fund value <x-term-info term="Position value" /></span>
                                         <b>${{ number_format($positionValue, 2) }}</b>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted small">Units held</span>
+                                        <span class="text-muted small">Units held <x-term-info term="Units" /></span>
                                         <b>{{ number_format($units, 6) }}</b>
                                     </div>
                                 </div>
@@ -239,10 +238,10 @@
             </div>
         </div>
 
-        {{-- ======= Position + results ======= --}}
-        <div class="row g-4 mt-1">
-            <div class="col-12 col-lg-5">
-                <div class="card h-100">
+        {{-- ======= Position ======= --}}
+        <div class="trade-grid mt-1">
+            <div class="trade-grid__cell">
+                <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fa-solid fa-briefcase me-2 text-primary"></i>Your Position</h5>
                         <span class="badge badge-soft-success">{{ $positionValue > 0 ? 'Active' : 'No position' }}</span>
@@ -266,22 +265,22 @@
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Units held</span>
+                                <span class="text-muted">Units held <x-term-info term="Units" /></span>
                                 <b>{{ number_format($units, 6) }}</b>
                             </div>
                             <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Net cash deployed</span>
+                                <span class="text-muted">Net cash deployed <x-term-info term="Net cash deployed" /></span>
                                 <b>${{ number_format(max($invested - $withdrawnFromPool, 0), 2) }}</b>
                             </div>
                             <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Total return (incl. unrealised)</span>
+                                <span class="text-muted">Total return (incl. unrealised) <x-term-info term="Total return" /></span>
                                 <b class="{{ $totalReturn >= 0 ? 'text-success' : 'text-danger' }}">
                                     {{ $totalReturn >= 0 ? '+' : '' }}${{ number_format($totalReturn, 2) }}
                                     ({{ $returnPct >= 0 ? '+' : '' }}{{ number_format($returnPct, 2) }}%)
                                 </b>
                             </div>
                             <div class="d-flex justify-content-between py-2">
-                                <span class="text-muted">Strategy</span>
+                                <span class="text-muted">Strategy <x-term-info term="Strategy" /></span>
                                 <b class="small">{{ $today['strategy'] }}</b>
                             </div>
                         @else
@@ -293,9 +292,12 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-12 col-lg-7">
-                <div class="card h-100">
+        {{-- ======= Daily Bot Results — full width, MT4/MT5 style ======= --}}
+        <div class="trade-grid mt-1">
+            <div class="trade-grid__cell">
+                <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0"><i class="fa-regular fa-calendar me-2 text-primary"></i>Daily Bot Results</h5>
                         <span class="text-muted small">
@@ -309,16 +311,16 @@
                                 <p class="mb-0">No bot sessions yet. Results will appear after the first daily cycle.</p>
                             </div>
                         @else
-                            <div class="table-responsive">
+                            <div class="table-responsive results-scroll">
                                 <table class="table table-hover align-middle mb-0 results-table">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
-                                            <th class="text-end">Open</th>
-                                            <th class="text-end">Close</th>
+                                            <th class="text-end">Open <x-term-info term="NAV" placement="bottom" /></th>
+                                            <th class="text-end">Close <x-term-info term="NAV" placement="bottom" /></th>
                                             <th class="text-end">Result</th>
                                             <th class="text-end">Trades</th>
-                                            <th class="text-end">Pool P&L</th>
+                                            <th class="text-end">Pool P&L <x-term-info term="Pool P&L" placement="bottom" /></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -337,8 +339,26 @@
                                                     </span>
                                                 </td>
                                                 <td class="text-end text-muted">{{ $today['trades'] }}</td>
-                                                <td class="text-end text-muted">pending</td>
+                                                <td class="text-end {{ $todayPoolPnl >= 0 ? 'text-success' : 'text-danger' }}">
+                                                    {{ $todayPoolPnl >= 0 ? '+' : '-' }}${{ number_format(abs($todayPoolPnl), 2) }}
+                                                    <small class="d-block text-muted fw-normal">live est.</small>
+                                                </td>
                                             </tr>
+                                            @if (! empty($today['trade_returns']))
+                                                <tr class="today-trades-row">
+                                                    <td colspan="6">
+                                                        <div class="d-flex flex-wrap align-items-center gap-2">
+                                                            <span class="text-muted small me-1">Live trades:</span>
+                                                            @foreach ($today['trade_returns'] as $i => $tr)
+                                                                <span class="trade-chip {{ $tr >= 0 ? 'trade-chip--win' : 'trade-chip--loss' }}"
+                                                                    title="Trade {{ $i + 1 }}">
+                                                                    {{ $tr >= 0 ? '+' : '' }}{{ number_format($tr, 2) }}%
+                                                                </span>
+                                                            @endforeach
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
                                         @endif
                                         @foreach ($sessions as $session)
                                             <tr>
@@ -365,47 +385,13 @@
             </div>
         </div>
 
-        @if ($dailyPayouts->isNotEmpty())
-            <div class="row g-4 mt-1">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fa-solid fa-coins me-2 text-primary"></i>Your Daily Returns</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Description</th>
-                                            <th class="text-end">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($dailyPayouts as $payout)
-                                            <tr>
-                                                <td class="text-muted">{{ $payout->created_at->format('M j, Y g:i A') }}</td>
-                                                <td>{{ $payout->description }}</td>
-                                                <td class="text-end text-success">+${{ number_format((float) $payout->amount, 2) }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        <div class="row g-4 mt-1">
-            <div class="col-12">
+        <div class="trade-grid mt-1">
+            <div class="trade-grid__cell">
                 <div class="card risk-disclaimer-card">
                     <div class="card-body">
                         <div class="d-flex align-items-start gap-3">
                             <i class="fa-solid fa-triangle-exclamation text-warning fa-lg mt-1"></i>
-                            <div>
+<div wire:poll.10s>
                                 <h6 class="fw-bold mb-2">Risk Disclosure</h6>
                                 <p class="small text-muted mb-2">
                                     Trading involves substantial risk of loss and is not suitable for all investors. The
@@ -447,6 +433,8 @@
     let chart = null;
     let state = { pair: 'BTC/USDT', tf: '5m' };
     let started = false;
+    let renderToken = 0;
+    let pending = null;
 
     function symbolFor(pair) {
         return SYMBOLS[pair] || pair.replace('/', '').toUpperCase();
@@ -681,9 +669,21 @@
 
     async function renderChart(force) {
         if (!panel) return;
-        if (!force && state.pair === panel.dataset.pair && state.tf === panel.dataset.timeframe && chart) return;
 
-        state = { pair: panel.dataset.pair || 'BTC/USDT', tf: panel.dataset.timeframe || '5m' };
+        const target = {
+            pair: panel.dataset.pair || 'BTC/USDT',
+            tf: panel.dataset.timeframe || '5m',
+        };
+
+        if (!force && pending && pending.pair === target.pair && pending.tf === target.tf) return;
+
+        if (!force && state.pair === target.pair && state.tf === target.tf && chart) return;
+
+        // A newer render supersedes any in-flight fetch so we never end up
+        // with two ApexCharts instances mounted on the same element.
+        const token = ++renderToken;
+        pending = target;
+        state = { pair: target.pair, tf: target.tf };
         setActive(state.pair, state.tf);
 
         if (chart) {
@@ -694,6 +694,8 @@
 
         const candles = await fetchKlines(state.pair, state.tf, LIMIT);
 
+        if (token !== renderToken) return;
+        pending = null;
         if (state.pair !== panel.dataset.pair || state.tf !== panel.dataset.timeframe) return;
 
         if (!candles) {

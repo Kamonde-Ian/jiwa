@@ -182,6 +182,36 @@ class AdminPanelSmokeTest extends TestCase
             ->assertSee('admin');
     }
 
+    public function test_user_trading_relation_manager_renders(): void
+    {
+        $admin = $this->adminUser();
+        $user = User::factory()->create();
+
+        $walletService = app(WalletService::class);
+        $walletService->credit(
+            $walletService->getOrCreate($user, Wallet::TYPE_PRINCIPAL),
+            1000,
+            'Deposit',
+        );
+
+        $bot = app(\App\Domain\Trading\TradingBotService::class);
+        $pool = $bot->pool();
+        $bot->allocate($user, $pool, 100);
+
+        $this->actingAs($admin)
+            ->get("/admin/users/{$user->id}/edit")
+            ->assertOk()
+            ->assertSee('Bot Fund');
+
+        Livewire::test(\App\Filament\Resources\UserResource\RelationManagers\TradingRelationManager::class, [
+            'ownerRecord' => $user,
+            'pageClass' => \App\Filament\Resources\UserResource\Pages\EditUser::class,
+        ])
+            ->assertOk()
+            ->assertSee($pool->name)
+            ->assertSee('Position value');
+    }
+
     public function test_funds_resources_render(): void
     {
         $admin = $this->adminUser();

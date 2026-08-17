@@ -4,6 +4,11 @@
 
 @php
     $plans = \App\Models\InvestmentPlan::where('is_active', true)->orderBy('min_amount')->get();
+    $minRate = $plans->first() ? (float) $plans->min('daily_rate') : (float) config('jiwa.default_daily_rate');
+    $maxRate = $plans->first() ? (float) $plans->max('daily_rate') : $minRate;
+    $minAmount = $plans->first() ? (float) $plans->min('min_amount') : (float) config('jiwa.min_investment');
+    $planCount = $plans->count();
+    $creditHours = (int) config('jiwa.interest_credit_hours');
     $features = [
         'Daily interest credited automatically',
         'Principal returned at maturity',
@@ -21,7 +26,7 @@
                     <span class="eyebrow mb-4"><i class="fa-solid fa-chart-line me-1"></i> Investment Plans</span>
                     <h1 class="mt-3 mb-4">Plans built for <strong>steady, predictable growth</strong></h1>
                     <p class="lead mb-0">
-                        Choose from five transparent plans — from short-term to long-term — with daily returns
+                        Choose from {{ $planCount }} transparent plans — from short-term to long-term — with daily returns
                         credited automatically and your principal returned at maturity.
                     </p>
                 </div>
@@ -42,7 +47,7 @@
                                     @endforeach
                                     <div class="d-flex justify-content-between align-items-center pt-2 small">
                                         <span class="text-muted">Minimum</span>
-                                        <span class="fw-semibold text-body">${{ number_format((float) ($plans->first()?->min_amount ?? config('jiwa.min_investment')), 0) }}</span>
+                                        <span class="fw-semibold text-body">${{ number_format($minAmount, 0) }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -210,19 +215,19 @@
 
             <div class="stats-band row g-4 p-4 p-md-4 mt-4 text-center">
                 <div class="col-6 col-md-3">
-                    <div class="stat-value">{{ number_format((float) $plans->min('daily_rate') * 100, 2) }}% – {{ number_format((float) $plans->max('daily_rate') * 100, 2) }}%</div>
+                    <div class="stat-value stat-value--range">{{ number_format($minRate * 100, 2) }}% <span class="stat-dash">–</span> {{ number_format($maxRate * 100, 2) }}%</div>
                     <div class="small">Daily interest range</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-value">24h</div>
+                    <div class="stat-value">{{ $creditHours }}h</div>
                     <div class="small">Interest credit cycle</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-value">${{ number_format((float) $plans->min('min_amount'), 0) }}</div>
+                    <div class="stat-value">${{ number_format($minAmount, 0) }}</div>
                     <div class="small">Minimum investment</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-value">5</div>
+                    <div class="stat-value">{{ $planCount }}</div>
                     <div class="small">Fixed + custom plans</div>
                 </div>
             </div>

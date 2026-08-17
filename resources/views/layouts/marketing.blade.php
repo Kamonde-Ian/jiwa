@@ -28,7 +28,7 @@
     </head>
     <body class="marketing-body">
         @include('partials.loading-screen')
-        @php $appEmail = 'support@'.strtolower((string) parse_url(config('app.url'), PHP_URL_HOST)); @endphp
+        @php $appEmail = config('jiwa.support_email'); @endphp
         <nav class="marketing-nav navbar navbar-expand-lg">
             <div class="container">
                 <a class="navbar-brand" href="{{ route('home') }}" wire:navigate>

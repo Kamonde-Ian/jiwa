@@ -28,6 +28,7 @@ class RoleSeeder extends Seeder
         'view settings',
         'manage settings',
         'manage roles',
+        'view admin earnings',
     ];
 
     public function run(): void

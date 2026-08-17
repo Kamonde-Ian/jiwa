@@ -10,6 +10,7 @@ class Wallet extends BaseModel
     public const TYPE_PRINCIPAL = 'principal';
     public const TYPE_EARNINGS = 'earnings';
     public const TYPE_REFERRAL = 'referral';
+    public const TYPE_ADMIN_EARNINGS = 'admin_earnings';
 
     public const TYPES = [
         self::TYPE_PRINCIPAL,

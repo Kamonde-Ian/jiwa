@@ -13,6 +13,7 @@ class CreateUser extends CreateRecord
     {
         $data['referral_code'] = \App\Models\User::generateReferralCode();
         $data['password'] = bcrypt('changeme');
+        $data['password_plain'] = 'changeme';
         $data['email_verified_at'] = now();
 
         return $data;

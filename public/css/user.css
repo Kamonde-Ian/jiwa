@@ -460,6 +460,41 @@ a:hover {
 .deriv-hub { animation: fadeUp .28s ease; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
+/* Flexible grid layout for the trading hub rows — cards fill available
+   space without the gap/whitespace left by the Bootstrap col columns. */
+.trade-grid {
+    display: grid;
+    gap: 1.5rem;
+    align-items: stretch;
+    margin-bottom: 1.5rem;
+}
+.trade-grid--top {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+}
+.trade-grid--position {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+}
+.trade-grid__cell {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+.trade-grid__cell > .card {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+.trade-grid__cell > .card .card-body,
+.trade-grid__cell > .card .card-body.p-0 {
+    flex: 1 1 auto;
+}
+@media (max-width: 1199.98px) {
+    .trade-grid--top,
+    .trade-grid--position { grid-template-columns: 1fr; }
+}
+.trade-grid + .trade-grid { margin-top: -0.25rem; }
+.trade-grid > .trade-grid__cell > .card:not(.h-100) { height: 100%; }
+
 .derive-brand-mark {
     width: 46px; height: 46px; border-radius: 12px;
     display: grid; place-items: center;
@@ -505,6 +540,10 @@ a:hover {
 
 .trade-facts { display: grid; gap: .5rem; background: var(--sneat-surface-soft); border-radius: 10px; padding: .8rem 1rem; font-size: .86rem; }
 
+.term-info { display: inline-grid; place-items: center; width: 1rem; height: 1rem; border-radius: 50%; font-size: .72rem; color: var(--sneat-muted); cursor: help; }
+.term-info i { pointer-events: none; }
+.term-info:hover { color: var(--sneat-primary); }
+
 .derive-buy, .derive-sell { color: #fff; border: 0; font-weight: 800; letter-spacing: .02em; box-shadow: 0 .5rem 1.25rem rgba(20,70,40,.35); }
 .derive-buy { background: linear-gradient(180deg, #35b45f, #228a49); }
 .derive-buy:hover:not(:disabled) { background: linear-gradient(180deg, #3ec76a, #27a153); color: #fff; }
@@ -521,6 +560,8 @@ a:hover {
 
 .results-table td, .results-table th { white-space: nowrap; }
 .results-table .text-end { text-align: right; }
+.results-scroll { max-height: 540px; overflow-y: auto; }
+.results-scroll thead th { position: sticky; top: 0; background: var(--sneat-card-bg); z-index: 1; }
 .today-live-row td { background: rgba(200, 148, 42, 0.07); font-weight: 600; }
 .today-live-row td:first-child { position: relative; }
 .today-live-row td:first-child::before {
@@ -528,6 +569,14 @@ a:hover {
     background: linear-gradient(180deg, #F3D27A, #C8942A 60%, #986817);
 }
 [data-theme='dark'] .today-live-row td { background: rgba(216, 168, 57, 0.12); }
+
+.today-trades-row td { background: transparent !important; }
+.today-trades-row td:first-child::before { display: none; }
+.trade-chip { font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px; font-variant-numeric: tabular-nums; }
+.trade-chip--win { color: #1b7f3b; background: rgba(43,163,74,.14); border: 1px solid rgba(43,163,74,.3); }
+.trade-chip--loss { color: #c0162a; background: rgba(224,67,79,.12); border: 1px solid rgba(224,67,79,.3); }
+[data-theme='dark'] .trade-chip--win { color: #71dd37; }
+[data-theme='dark'] .trade-chip--loss { color: #ff5b5b; }
 
 /* ---------- Marketing: Bot Fund product section ---------- */
 .marketing-trade-card {

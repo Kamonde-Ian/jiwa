@@ -184,6 +184,12 @@ class Trade extends Component
         $today = $service->today($pool);
         $todayPnl = $positionValue * ($today['change_pct'] / 100);
 
+        // Live pool-level P&L estimate for the unsettled day: NAV move on the
+        // fund's invested base, mirroring how settled sessions compute `pnl`.
+        $todayPoolPnl = (float) $pool->total_units > 0
+            ? ($today['price'] - $today['open']) * (float) $pool->total_units
+            : 0.0;
+
         $sessions = $pool->sessions()
             ->orderByDesc('session_date')
             ->limit(20)
@@ -192,14 +198,6 @@ class Trade extends Component
         $allocationIds = $pool->allocations()
             ->where('user_id', $user->id)
             ->pluck('id');
-
-        $dailyPayouts = $earnings->transactions()
-            ->where('type', 'credit')
-            ->where('description', 'like', 'Bot trading result%')
-            ->whereIn('reference_type', [PoolAllocation::class])
-            ->latest('id')
-            ->limit(20)
-            ->get();
 
         return view('livewire.trade', [
             'pool' => $pool,
@@ -213,6 +211,7 @@ class Trade extends Component
             'positionValue' => $positionValue,
             'units' => $units,
             'principal' => (float) $principal->balance,
+            'principalAvailable' => (float) $principal->balance + $positionValue,
             'withdrawable' => (float) $earnings->balance + (float) $referral->balance,
             'earnings' => (float) $earnings->balance,
             'invested' => $invested,
@@ -222,8 +221,8 @@ class Trade extends Component
             'returnPct' => $returnPct,
             'today' => $today,
             'todayPnl' => $todayPnl,
+            'todayPoolPnl' => $todayPoolPnl,
             'sessions' => $sessions,
-            'dailyPayouts' => $dailyPayouts,
         ]);
     }
 }

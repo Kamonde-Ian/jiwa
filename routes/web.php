@@ -10,6 +10,7 @@ use App\Livewire\Security;
 use App\Livewire\Statements;
 use App\Livewire\Wallets;
 use App\Livewire\Withdrawals;
+use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\MarketKlinesController;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/statements', Statements::class)->name('statements.index');
 
     Route::get('profile', Kyc::class)->name('profile');
+
+    Route::get('/admin/impersonate/{target}', [ImpersonateController::class, 'enter'])->name('admin.impersonate');
+    Route::post('/impersonate/leave', [ImpersonateController::class, 'leave'])->name('impersonate.leave');
 });
 
 require __DIR__.'/auth.php';

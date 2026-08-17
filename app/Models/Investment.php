@@ -44,4 +44,9 @@ class Investment extends BaseModel
     {
         return $this->morphMany(WalletTransaction::class, 'reference');
     }
+
+    public function adminEarnings(): MorphMany
+    {
+        return $this->morphMany(AdminEarning::class, 'source');
+    }
 }

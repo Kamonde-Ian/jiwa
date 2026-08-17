@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Withdrawal extends BaseModel
 {
@@ -39,5 +40,10 @@ class Withdrawal extends BaseModel
     public function processor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function adminEarnings(): MorphMany
+    {
+        return $this->morphMany(AdminEarning::class, 'source');
     }
 }

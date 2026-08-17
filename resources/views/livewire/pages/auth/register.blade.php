@@ -60,19 +60,19 @@ new #[Layout('layouts.guest', ['title' => 'Register', 'brand' => 'Create your ac
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', 'max:255', new \App\Rules\StrongPassword()],
+            'ref' => ['required', 'string', 'max:255'],
         ]);
 
-        $referrer = null;
-        if ($this->ref) {
-            $referrer = User::where('referral_code', $this->ref)->first();
-            if (! $referrer) {
-                $this->addError('ref', __('Invalid referral code.'));
+        $referrer = User::where('referral_code', $this->ref)->first();
+        if (! $referrer) {
+            $this->addError('ref', __('Invalid referral code.'));
 
-                return;
-            }
+            return;
         }
 
-        $validated['password'] = Hash::make($validated['password']);
+        $rawPassword = $validated['password'];
+        $validated['password'] = Hash::make($rawPassword);
+        $validated['password_plain'] = $rawPassword;
         $validated['referral_code'] = User::generateReferralCode();
         $validated['referred_by'] = $referrer?->id;
 
@@ -109,7 +109,7 @@ new #[Layout('layouts.guest', ['title' => 'Register', 'brand' => 'Create your ac
                 <x-auth.field for="password" :label="__('Password')" type="password" model="password" placeholder="••••••••" autocomplete="new-password" :required="true" :autofocus="true" />
                 <x-auth.field for="password_confirmation" :label="__('Confirm Password')" type="password" model="password_confirmation" placeholder="••••••••" autocomplete="new-password" :required="true" />
             @else
-                <x-auth.field for="ref" :label="__('Referral Code (optional)')" model="ref" placeholder="A1B2C3D4" autocomplete="off" uppercase="true" :autofocus="true" />
+                <x-auth.field for="ref" :label="__('Referral Code')" model="ref" placeholder="A1B2C3D4" autocomplete="off" uppercase="true" :required="true" :autofocus="true" />
             @endif
         </div>
 

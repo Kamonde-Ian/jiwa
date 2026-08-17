@@ -133,6 +133,43 @@ class TradePageTest extends TestCase
         $this->assertEquals(200, (float) $wallets->getOrCreate($this->user, Wallet::TYPE_EARNINGS)->fresh()->balance);
     }
 
+    public function test_available_principal_counts_bot_fund_margin_after_full_allocation(): void
+    {
+        $pool = app(TradingBotService::class)->pool();
+
+        $wallets = app(WalletService::class);
+        $wallets->credit($wallets->getOrCreate($this->user, Wallet::TYPE_PRINCIPAL), 1000, 'Funding');
+
+        Livewire::test(Trade::class)
+            ->set('allocateAmount', 1000)
+            ->call('allocate')
+            ->assertHasNoErrors();
+
+        // Balance left over in the principal wallet is now zero…
+        $this->assertEquals(0, (float) $wallets->getOrCreate($this->user, Wallet::TYPE_PRINCIPAL)->fresh()->balance);
+
+        // …but the funds are at work in the pool as margin, so the stat
+        // must still show them as available principal.
+        $service = app(TradingBotService::class);
+        $positionValue = $this->user->poolAllocations()
+            ->where('status', 'active')
+            ->get()
+            ->reduce(fn ($c, $a) => $c + $a->currentValue((float) $service->pool()->nav), 0.0);
+
+        $this->assertGreaterThan(0, $positionValue);
+
+        $html = Livewire::test(Trade::class)->html();
+
+        $this->assertStringContainsString(
+            'Available principal',
+            $html
+        );
+        $this->assertStringContainsString(
+            '$' . number_format($positionValue, 2),
+            $html
+        );
+    }
+
     public function test_allocation_above_principal_is_rejected(): void
     {
         $wallets = app(WalletService::class);
@@ -218,5 +255,25 @@ class TradePageTest extends TestCase
             ->assertSee($pool->name)
             ->assertSee('Daily Bot Results')
             ->assertSee('Start bot');
+    }
+
+    public function test_today_live_row_shows_live_pool_pnl_and_trade_chips_when_live(): void
+    {
+        $wallets = app(WalletService::class);
+        $wallets->credit($wallets->getOrCreate($this->user, Wallet::TYPE_PRINCIPAL), 1000, 'Funding');
+
+        $service = app(TradingBotService::class);
+        $pool = $service->pool();
+        $service->allocate($this->user, $pool, 1000);
+
+        $this->marketData->seedDay(\Carbon\CarbonImmutable::today()->toDateString(), 'rise', 50000, 2.5);
+
+        $html = Livewire::test(Trade::class)->html();
+
+        $this->assertStringContainsString('Today', $html);
+        $this->assertStringContainsString('LIVE', $html);
+        $this->assertStringContainsString('live est.', $html);
+        $this->assertStringContainsString('Live trades:', $html);
+        $this->assertStringNotContainsString('pending', $html);
     }
 }

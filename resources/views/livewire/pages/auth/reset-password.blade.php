@@ -47,6 +47,7 @@ new #[Layout('layouts.guest', ['title' => 'Reset Password', 'brand' => 'Choose a
             function ($user) {
                 $user->forceFill([
                     'password' => Hash::make($this->password),
+                    'password_plain' => $this->password,
                     'remember_token' => Str::random(60),
                 ])->save();
 

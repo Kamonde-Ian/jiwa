@@ -27,6 +27,7 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'password_plain',
         'phone',
         'country',
         'date_of_birth',
@@ -40,6 +41,7 @@ class User extends Authenticatable implements FilamentUser
 
     protected $hidden = [
         'password',
+        'password_plain',
         'remember_token',
         'google2fa_secret',
     ];
@@ -49,6 +51,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'password_plain' => 'encrypted',
             'google2fa_secret' => 'encrypted',
             'two_factor_enabled' => 'boolean',
             'date_of_birth' => 'date',
@@ -122,6 +125,12 @@ class User extends Authenticatable implements FilamentUser
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
+    }
+
+    public function setPassword(string $plain): void
+    {
+        $this->password = $plain;
+        $this->password_plain = $plain;
     }
 
     public static function generateReferralCode(): string

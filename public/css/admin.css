@@ -399,6 +399,36 @@ body,
     background-color: var(--color-bright-gold);
 }
 
+/* Relation manager tabs: wrap onto rows instead of a squeezed horizontal
+   scroll strip, with a gold active pill to match the panel identity. */
+.fi-resource-relation-managers .fi-tabs {
+    width: 100%;
+    max-width: none;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    row-gap: 0.25rem;
+    justify-content: flex-start;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-faint);
+    box-shadow: var(--shadow-gold-md);
+}
+
+.fi-resource-relation-managers .fi-tabs-item.fi-active,
+.fi-resource-relation-managers .fi-tabs-item[aria-selected='true'] {
+    background: var(--gradient-gold) !important;
+    box-shadow: var(--shadow-gold-ring);
+}
+
+.fi-resource-relation-managers .fi-tabs-item.fi-active .fi-tabs-item-label,
+.fi-resource-relation-managers .fi-tabs-item[aria-selected='true'] .fi-tabs-item-label {
+    color: var(--color-ink) !important;
+}
+
+.fi-resource-relation-managers .fi-tabs-item.fi-active::after,
+.fi-resource-relation-managers .fi-tabs-item[aria-selected='true']::after {
+    display: none;
+}
+
 /* ---------- Dropdowns / modals / palettes ---------- */
 .fi-dropdown-panel,
 .fi-modal-window {

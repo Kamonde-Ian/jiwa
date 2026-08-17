@@ -22,19 +22,27 @@ class DatabaseSeeder extends Seeder
         $this->seedPlatformWallets();
         $this->seedPlatformAddresses();
 
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@jiwa.test'],
-            [
-                'name' => 'Demo Admin',
-                'phone' => '+1 555 010 0100',
-                'country' => 'United States',
-                'password' => 'password',
-                'email_verified_at' => now(),
-                'kyc_status' => User::KYC_VERIFIED,
-                'two_factor_enabled' => false,
-            ],
-        );
-        $admin->assignRole('admin');
+        $admins = [
+            ['email' => 'admin@jiwa.test', 'name' => 'Demo Admin'],
+            ['email' => 'finance@jiwa.test', 'name' => 'Finance Admin'],
+            ['email' => 'operations@jiwa.test', 'name' => 'Operations Admin'],
+        ];
+
+        foreach ($admins as $admin) {
+            $adminUser = User::updateOrCreate(
+                ['email' => $admin['email']],
+                [
+                    'name' => $admin['name'],
+                    'phone' => '+1 555 010 0100',
+                    'country' => 'United States',
+                    'password' => 'password',
+                    'email_verified_at' => now(),
+                    'kyc_status' => User::KYC_VERIFIED,
+                    'two_factor_enabled' => false,
+                ],
+            );
+            $adminUser->assignRole('admin');
+        }
 
         $user = User::updateOrCreate(
             ['email' => 'user@jiwa.test'],

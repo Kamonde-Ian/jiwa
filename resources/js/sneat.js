@@ -129,6 +129,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+function mountTooltips() {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+        if (!el.matches('.tooltip-shown') && !window.bootstrap.Tooltip.getInstance(el)) {
+            new bootstrap.Tooltip(el, { trigger: 'hover focus' });
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', mountTooltips);
+document.addEventListener('livewire:navigated', mountTooltips);
+document.addEventListener('livewire:init', () => {
+    if (!window.Livewire) return;
+    window.Livewire.hook('morph.updated', mountTooltips);
+    window.Livewire.hook('morph.added', mountTooltips);
+});
+
 function copyToClipboard(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         return navigator.clipboard.writeText(text);

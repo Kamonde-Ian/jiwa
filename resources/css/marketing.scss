@@ -178,6 +178,27 @@
     line-height: 1;
 }
 
+.stats-band .stat-value--range {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    white-space: nowrap;
+}
+
+.stats-band .stat-dash {
+    font-weight: 400;
+    font-size: 0.6em;
+    vertical-align: 0.12em;
+    opacity: 0.85;
+}
+
+.stats-band .stat-caption {
+    display: inline;
+    font-weight: 400;
+    font-size: 0.32em;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
 .stats-band .stat-value { color: #18202e; }
 
 /* ---------- Feature / service cards ---------- */

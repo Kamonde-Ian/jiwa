@@ -28,6 +28,16 @@
     <body>
         @include('partials.loading-screen')
         <div class="layout-wrapper">
+            @if (session('impersonator_id'))
+                <div class="alert alert-warning rounded-0 border-0 mb-0 text-center small lh-lg" role="alert">
+                    <i class="fa-solid fa-user-secret me-1"></i>
+                    Admin preview — viewing the dashboard as <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->email }}).
+                    <form method="POST" action="{{ route('impersonate.leave') }}" class="d-inline ms-2 mb-0">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-dark">Return to Admin</button>
+                    </form>
+                </div>
+            @endif
             @include('layouts.partials.sidebar')
             <div class="layout-sidebar-backdrop" id="layout-sidebar-backdrop" aria-hidden="true"></div>
 

@@ -11,21 +11,37 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_without_referral_code_assigns_unique_code(): void
+    public function test_registration_with_referral_code_assigns_unique_code(): void
     {
+        $referrer = User::factory()->create(['referral_code' => 'JIV4TEST']);
+
         Volt::test('pages.auth.register')
             ->set('name', 'Test User')
             ->set('email', 'test@example.com')
             ->set('password', 'Password1234')
             ->set('password_confirmation', 'Password1234')
+            ->set('ref', 'JIV4TEST')
             ->call('register');
 
         $user = User::where('email', 'test@example.com')->first();
 
         $this->assertNotNull($user);
         $this->assertNotNull($user->referral_code);
-        $this->assertNull($user->referred_by);
+        $this->assertEquals($referrer->id, $user->referred_by);
         $this->assertEquals(8, strlen($user->referral_code));
+    }
+
+    public function test_registration_requires_referral_code(): void
+    {
+        Volt::test('pages.auth.register')
+            ->set('name', 'Test User')
+            ->set('email', 'test@example.com')
+            ->set('password', 'Password1234')
+            ->set('password_confirmation', 'Password1234')
+            ->call('register')
+            ->assertHasErrors('ref');
+
+        $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
     }
 
     public function test_registration_with_valid_referral_code_links_referrer(): void
@@ -63,11 +79,14 @@ class RegistrationTest extends TestCase
 
     public function test_registration_followed_by_dashboard_access(): void
     {
+        $referrer = User::factory()->create(['referral_code' => 'JIV4TEST']);
+
         Volt::test('pages.auth.register')
             ->set('name', 'Test User')
             ->set('email', 'test@example.com')
             ->set('password', 'Password1234')
             ->set('password_confirmation', 'Password1234')
+            ->set('ref', 'JIV4TEST')
             ->call('register')
             ->assertRedirect(route('dashboard', absolute: false));
 
@@ -89,6 +108,8 @@ class RegistrationTest extends TestCase
 
     public function test_registration_wizard_progresses_step_by_step(): void
     {
+        $referrer = User::factory()->create(['referral_code' => 'JIV4TEST']);
+
         $component = Volt::test('pages.auth.register');
 
         // Cannot advance past step 1 without name/email
@@ -121,6 +142,7 @@ class RegistrationTest extends TestCase
         // Forward again and complete registration
         $component->call('nextStep')
             ->assertSet('step', 3)
+            ->set('ref', 'JIV4TEST')
             ->call('register')
             ->assertHasNoErrors();
     }

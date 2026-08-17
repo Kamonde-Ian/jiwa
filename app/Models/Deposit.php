@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Deposit extends BaseModel
 {
@@ -40,5 +41,10 @@ class Deposit extends BaseModel
     public function confirmor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'confirmed_by');
+    }
+
+    public function adminEarnings(): MorphMany
+    {
+        return $this->morphMany(AdminEarning::class, 'source');
     }
 }

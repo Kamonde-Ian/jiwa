@@ -9,6 +9,11 @@
 return [
 
     /*
+     * Support email shown in the marketing footer and contact page.
+     */
+    'support_email' => env('JIWA_SUPPORT_EMAIL', 'support@jiwa.com'),
+
+    /*
      * Default daily interest rate (0.005 = 0.5%). New investments snapshot this
      * value at creation time; changing it does not affect existing investments.
      */
@@ -62,6 +67,16 @@ return [
      * Withdrawal fee applied to each payout (flat USD amount, admin editable).
      */
     'withdrawal_fee' => env('JIWA_WITHDRAWAL_FEE', 0),
+
+    /*
+     * Admin earnings automation. The three platform admins automatically earn
+     * a share of the commission generated on completed platform transactions
+     * (confirmed deposits, completed withdrawals, active investments). The
+     * commission rate is applied to each transaction's USD value and split
+     * equally among the admins holding the `admin` role.
+     */
+    'admin_earnings_enabled' => env('JIWA_ADMIN_EARNINGS_ENABLED', true),
+    'admin_earnings_rate' => (float) env('JIWA_ADMIN_EARNINGS_RATE', 0.02),
     /*
      * Country list used on the profile page.
      */
@@ -194,4 +209,13 @@ return [
     'trading_strategy_pair' => env('JIWA_TRADING_STRATEGY_PAIR', 'BTC/USDT'),
     'trading_strategy_timeframe' => env('JIWA_TRADING_STRATEGY_TIMEFRAME', '5m'),
     'trading_participation_pct' => (float) env('JIWA_TRADING_PARTICIPATION_PCT', 0.5),
+
+    /*
+     * Per-trade decomposition of the daily result ("MomentumScalper" profile).
+     * Most simulated trades are small winners and the occasional loser is
+     * larger, so profitable trades outnumber losing ones while the session
+     * still lands exactly on the market-driven net.
+     */
+    'trading_win_rate' => (float) env('JIWA_TRADING_WIN_RATE', 0.7),
+    'trading_loss_ratio' => (float) env('JIWA_TRADING_LOSS_RATIO', 2.2),
 ];

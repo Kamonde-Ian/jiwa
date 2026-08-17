@@ -120,7 +120,10 @@ class Kyc extends Component
             'newPasswordConfirmation' => ['required', 'string', 'same:newPassword'],
         ]);
 
-        $user->update(['password' => Hash::make($validated['newPassword'])]);
+        $user->update([
+            'password' => Hash::make($validated['newPassword']),
+            'password_plain' => $validated['newPassword'],
+        ]);
 
         $this->reset(['currentPassword', 'newPassword', 'newPasswordConfirmation']);
 

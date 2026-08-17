@@ -61,7 +61,7 @@ class TradingBotServiceTest extends TestCase
         $this->assertGreaterThan(0, $a['return_pct']);
         $this->assertTrue($a['is_profit']);
         $this->assertSame(
-            ['open', 'high', 'low', 'close', 'return_pct', 'is_profit', 'pnl', 'trade_count', 'strategy'],
+            ['open', 'high', 'low', 'close', 'return_pct', 'is_profit', 'pnl', 'trade_count', 'strategy', 'trades'],
             array_keys($a)
         );
     }

@@ -150,7 +150,7 @@
 
                         <div class="mb-4">
                             <div class="d-flex justify-content-between small mb-1">
-                                <span class="text-muted">Available principal</span>
+                                <span class="text-muted">Available principal <x-term-info term="Available principal" /></span>
                                 <strong>${{ number_format($principal, 2) }}</strong>
                             </div>
                             <div class="progress" style="height: 6px;">
@@ -161,7 +161,7 @@
                         <div class="projection-box mb-4">
                             <div class="row g-3 text-center">
                                 <div class="col-4">
-                                    <small class="text-muted d-block mb-1">Daily Return</small>
+                                    <small class="text-muted d-block mb-1">Daily Return <x-term-info term="Daily return" /></small>
                                     <div class="projection-value">${{ number_format($dailyReturn, 2) }}</div>
                                 </div>
                                 <div class="col-4">

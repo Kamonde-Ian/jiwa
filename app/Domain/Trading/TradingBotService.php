@@ -364,11 +364,15 @@ class TradingBotService
      * Real-data trading day for a pool. The strategy ("MomentumScalper") reads
      * the day's live candles for the configured strategy pair/timeframe and
      * books a damped share of the raw market move (participation factor) as
-     * the pool's result, with the NAV path scaled to match so chart and
-     * settlement always agree. Candle data for a completed UTC day is fixed,
-     * so repeat calls for the same date produce the same path.
+     * the pool's net result. That net is then broken down into the day's
+     * individual trades (the fast/slow MA-cross signals): most simulated
+     * trades are small winners and the occasional loser is larger, so profits
+     * outnumber losses while the whole day still lands exactly on the
+     * market-driven net. Candle data for a completed UTC day is fixed and the
+     * per-trade randomness is seeded from that data, so repeat calls for the
+     * same date produce the same path (idempotent settlement).
      *
-     * @return array{open:float, high:float, low:float, close:float, return_pct:float, is_profit:bool, pnl:float, trade_count:int, strategy:string}
+     * @return array{open:float, high:float, low:float, close:float, return_pct:float, is_profit:bool, pnl:float, trade_count:int, strategy:string, trades:array<int, float>}
      */
     public function sessionPath(TradingPool $pool, CarbonImmutable $date, ?float $open = null): array
     {
@@ -389,6 +393,7 @@ class TradingBotService
                 'pnl' => 0.0,
                 'trade_count' => 0,
                 'strategy' => 'MomentumScalper '.self::STRATEGY_VERSION." — {$pair} · {$interval} (no market data)",
+                'trades' => [],
             ];
         }
 
@@ -403,25 +408,152 @@ class TradingBotService
 
         $rawPct = $dayOpen > 0 ? (($dayClose - $dayOpen) / $dayOpen) * 100 : 0.0;
         $participation = max(0.0, (float) PlatformSettings::config('jiwa.trading_participation_pct'));
-        $returnPct = round($rawPct * $participation, 4);
+        $netReturnPct = round($rawPct * $participation, 4);
 
         $upPct = $dayOpen > 0 ? (($dayHigh - $dayOpen) / $dayOpen) * 100 : 0.0;
         $downPct = $dayOpen > 0 ? (($dayLow - $dayOpen) / $dayOpen) * 100 : 0.0;
 
         $tradeCount = $this->signalCount($closes);
-        $strategy = 'MomentumScalper '.self::STRATEGY_VERSION.": {$pair} · {$interval}, {$tradeCount} signal".(($tradeCount === 1) ? '' : 's');
+
+        [$tradeReturns, $wins, $losses] = $this->simulateTrades($date, $pair, $interval, $closes, $netReturnPct, $tradeCount);
+
+        $strategy = 'MomentumScalper '.self::STRATEGY_VERSION.": {$pair} · {$interval}, {$tradeCount} signal".(($tradeCount === 1) ? '' : 's')." — {$wins}W / {$losses}L";
 
         return [
             'open' => round($open, 8),
             'high' => round($open * (1 + ($upPct * $participation) / 100), 8),
             'low' => max(0.0, round($open * (1 + ($downPct * $participation) / 100), 8)),
-            'close' => round($open * (1 + $returnPct / 100), 8),
-            'return_pct' => $returnPct,
-            'is_profit' => $returnPct >= 0,
+            'close' => round($open * (1 + $netReturnPct / 100), 8),
+            'return_pct' => $netReturnPct,
+            'is_profit' => $netReturnPct >= 0,
             'pnl' => 0.0,
             'trade_count' => $tradeCount,
             'strategy' => $strategy,
+            'trades' => array_map(fn (float $r) => round($r, 4), $tradeReturns),
         ];
+    }
+
+    /**
+     * Simulate the session's individual trades. Most signal trades are seeded
+     * as small winners and the occasional loser is larger, so the day's
+     * read-out shows more profitable trades than losing ones (a scalper
+     * profile) while the sequence still sums exactly to the market-driven net.
+     * Randomness is seeded deterministically from the real candle data
+     * (date + pair + interval + close series) so the same day reproduces the
+     * same outcome on every call.
+     *
+     * @param  array<int, float>  $closes
+     * @return array{0: array<int, float>, 1: int, 2: int}  [returns, wins, losses]
+     */
+    protected function simulateTrades(CarbonImmutable $date, string $pair, string $interval, array $closes, float $netReturnPct, int $tradeCount): array
+    {
+        if ($tradeCount <= 0) {
+            return [[], 0, 0];
+        }
+
+        // Seed the per-trade randomness from the immutable market data itself,
+        // so settlement stays idempotent and reproducible for any completed day.
+        // A dedicated Mt19937 engine keeps the global RNG untouched.
+        $randomizer = new \Random\Randomizer(new \Random\Engine\Mt19937(
+            crc32($date->toDateString().'|'.$pair.'|'.$interval.'|'.implode(',', $closes))
+        ));
+
+        $avgRangePct = $this->averageCandleRangePct($closes);
+        $amplitude = max($avgRangePct, abs($netReturnPct) / max($tradeCount * 4, 1));
+
+        // Scalper profile: most trades win (small), the rest lose bigger, so
+        // profits outnumber losses while the winners still carry the day.
+        $winRate = (float) (PlatformSettings::config('jiwa.trading_win_rate') ?? 0.7);
+        $winRate = min(0.9, max(0.5, $winRate));
+        $lossRatio = max(1.0, (float) (PlatformSettings::config('jiwa.trading_loss_ratio') ?? 2.2));
+
+        $wins = [];
+        $losses = [];
+
+        for ($i = 0; $i < $tradeCount; $i++) {
+            $size = 0.5 + $randomizer->getFloat(0.0, 1.0);
+
+            if ($randomizer->getFloat(0.0, 1.0) < $winRate) {
+                $wins[] = $amplitude * $size;
+            } else {
+                $losses[] = $amplitude * $lossRatio * $size;
+            }
+        }
+
+        $target = (float) $netReturnPct;
+        $sumWins = array_sum($wins);
+        $sumLosses = array_sum($losses);
+
+        // Keep at least one trade on each side so the day's direction is
+        // expressed through magnitude instead of a one-sided loss streak.
+        if ($target >= 0.0 && $wins === []) {
+            $wins[] = array_shift($losses) ?? $amplitude;
+        } elseif ($target < 0.0 && $losses === []) {
+            $losses[] = array_shift($wins) ?? $amplitude;
+        }
+
+        $sumWins = array_sum($wins);
+        $sumLosses = array_sum($losses);
+
+        // Scale one side so the sequence sums exactly to the day's net while
+        // every trade keeps its sign: winners absorb an up day, losers absorb
+        // a down day.
+        $scaleWins = 1.0;
+        $scaleLosses = 1.0;
+
+        if ($target >= 0.0 && $sumWins > 0.0) {
+            $scaleWins = max(0.0, ($target + $sumLosses) / $sumWins);
+        } elseif ($sumLosses > 0.0) {
+            $scaleLosses = max(0.0, ($sumWins - $target) / $sumLosses);
+        }
+
+        $tradeReturns = [];
+
+        foreach ($wins as $win) {
+            $tradeReturns[] = $win * $scaleWins;
+        }
+
+        foreach ($losses as $loss) {
+            $tradeReturns[] = -$loss * $scaleLosses;
+        }
+
+        // Shuffle the seeded path so the read-out doesn't book all winners
+        // before all losers; the same date always reproduces the same order.
+        $tradeReturns = $randomizer->shuffleArray($tradeReturns);
+
+        $winsCount = count(array_filter($tradeReturns, fn (float $r) => $r >= 0));
+
+        return [$tradeReturns, $winsCount, $tradeCount - $winsCount];
+    }
+
+    /**
+     * Average candle range (high-minus-low over open, in %) across the day —
+     * the volatility envelope each simulated trade is allowed to move within.
+     *
+     * @param  array<int, float>  $closes
+     */
+    protected function averageCandleRangePct(array $closes): float
+    {
+        $count = count($closes);
+        if ($count < 2) {
+            return 0.0;
+        }
+
+        $sum = 0.0;
+        $measured = 0;
+
+        for ($i = 1; $i < $count; $i++) {
+            $prev = (float) $closes[$i - 1];
+
+            if ($prev <= 0) {
+                continue;
+            }
+
+            $sum += abs((float) $closes[$i] - $prev) / $prev * 100;
+            $measured++;
+        }
+
+        return $measured > 0 ? $sum / $measured : 0.0;
     }
 
     /**
@@ -486,7 +618,7 @@ class TradingBotService
      * the strategy's result so far, or the settled session when the day is
      * already booked.
      *
-     * @return array{open:float, high:float, low:float, price:float, change_pct:float, is_profit:bool, trades:int, strategy:string, live:bool}
+     * @return array{open:float, high:float, low:float, price:float, change_pct:float, is_profit:bool, trades:int, strategy:string, trade_returns:list<float>, live:bool}
      */
     public function today(TradingPool $pool): array
     {
@@ -504,6 +636,7 @@ class TradingBotService
                 'is_profit' => (bool) $session->is_profit,
                 'trades' => (int) $session->trade_count,
                 'strategy' => (string) $session->strategy,
+                'trade_returns' => [],
                 'live' => false,
             ];
         }
@@ -521,6 +654,7 @@ class TradingBotService
             'is_profit' => $changePct >= 0,
             'trades' => $path['trade_count'],
             'strategy' => $path['strategy'],
+            'trade_returns' => $path['trades'],
             'live' => true,
         ];
     }

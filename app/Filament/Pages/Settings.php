@@ -6,6 +6,7 @@ use App\Support\PlatformSettings;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
@@ -42,6 +43,8 @@ class Settings extends Page implements HasForms
             'referral_qualification_minimum' => PlatformSettings::config('jiwa.referral_qualification_minimum'),
             'min_withdrawal' => PlatformSettings::config('jiwa.min_withdrawal'),
             'withdrawal_fee' => PlatformSettings::config('jiwa.withdrawal_fee'),
+            'admin_earnings_enabled' => PlatformSettings::config('jiwa.admin_earnings_enabled'),
+            'admin_earnings_rate' => PlatformSettings::config('jiwa.admin_earnings_rate'),
             'withdrawal_auto_approve_threshold' => PlatformSettings::config('jiwa.withdrawal_auto_approve_threshold'),
             'withdrawal_manual_threshold' => PlatformSettings::config('jiwa.withdrawal_manual_threshold'),
             'btc_address' => PlatformSettings::config('jiwa.networks.btc.deposit_address'),
@@ -80,6 +83,13 @@ class Settings extends Page implements HasForms
                         TextInput::make('withdrawal_manual_threshold')->label('Always manual review above (USD)')->numeric()->required()->minValue(0),
                     ])
                     ->columns(2),
+                Section::make('Admin Earnings')
+                    ->description('Automatically distributes a commission on completed transactions equally among the admins.')
+                    ->schema([
+                        Toggle::make('admin_earnings_enabled')->label('Enable automated admin earnings'),
+                        TextInput::make('admin_earnings_rate')->label('Admin commission rate (decimal, e.g. 0.02 = 2%)')->numeric()->required()->minValue(0)->maxValue(1),
+                    ])
+                    ->columns(2),
                 Section::make('Crypto Deposit Addresses')
                     ->description('Shown to users when funding their accounts.')
                     ->schema([
@@ -108,6 +118,8 @@ class Settings extends Page implements HasForms
             'referral_qualification_minimum' => ['referrals', (float) $data['referral_qualification_minimum']],
             'min_withdrawal' => ['withdrawals', (float) $data['min_withdrawal']],
             'withdrawal_fee' => ['withdrawals', (float) $data['withdrawal_fee']],
+            'admin_earnings_enabled' => ['admin_earnings', (bool) $data['admin_earnings_enabled']],
+            'admin_earnings_rate' => ['admin_earnings', (float) $data['admin_earnings_rate']],
             'withdrawal_auto_approve_threshold' => ['withdrawals', (float) $data['withdrawal_auto_approve_threshold']],
             'withdrawal_manual_threshold' => ['withdrawals', (float) $data['withdrawal_manual_threshold']],
             'networks.btc.deposit_address' => ['networks', $data['btc_address'] ?? ''],

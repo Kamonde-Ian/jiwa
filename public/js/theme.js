@@ -92,6 +92,14 @@
             if (theme === 'dark' || theme === 'light') setTheme(theme);
         });
 
+        // Re-apply the persisted theme after every Livewire SPA navigation so
+        // the selection sticks when moving between pages.
+        document.addEventListener('livewire:navigated', function () {
+            current = getStored() || current || DEFAULT_THEME;
+            apply(current);
+            syncCheckboxes();
+        });
+
         window.JIWATheme = {
             set: setTheme,
             toggle: function () { setTheme(current === 'dark' ? 'light' : 'dark'); },

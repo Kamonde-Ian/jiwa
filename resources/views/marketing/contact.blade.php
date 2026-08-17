@@ -1,6 +1,6 @@
 @extends('layouts.marketing')
 
-@php $support = 'support@'.parse_url(config('app.url'), PHP_URL_HOST); @endphp
+@php $support = config('jiwa.support_email'); @endphp
 
 @section('title', 'Contact — '.config('app.name'))
 

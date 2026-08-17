@@ -7,6 +7,7 @@ use App\Filament\Resources\UserResource\RelationManagers\DepositsRelationManager
 use App\Filament\Resources\UserResource\RelationManagers\InvestmentsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\ReferralEarningsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\ReferralsRelationManager;
+use App\Filament\Resources\UserResource\RelationManagers\TradingRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\WalletsRelationManager;
 use App\Filament\Resources\UserResource\RelationManagers\WithdrawalsRelationManager;
 use App\Models\User;
@@ -111,6 +112,15 @@ class UserResource extends Resource
                         TextEntry::make('email_verified_at')->label('Email verified')->dateTime()->placeholder('—'),
                         TextEntry::make('created_at')->dateTime(),
                     ]),
+                Section::make('Security')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('password_plain')
+                            ->label('Current password')
+                            ->copyable()
+                            ->placeholder('— not recorded (set before plaintext copy was enabled)')
+                            ->color(fn ($state) => $state ? 'warning' : 'gray'),
+                    ]),
             ]);
     }
 
@@ -145,6 +155,12 @@ class UserResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('loginAs')
+                    ->label('Login as user')
+                    ->icon('heroicon-o-arrow-right-start-on-rectangle')
+                    ->color('info')
+                    ->url(fn (User $record) => route('admin.impersonate', $record))
+                    ->visible(fn (User $record) => ! $record->isAdmin()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -180,6 +196,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
+            TradingRelationManager::class,
             WalletsRelationManager::class,
             InvestmentsRelationManager::class,
             ReferralsRelationManager::class,
